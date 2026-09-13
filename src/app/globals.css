@@ -1,0 +1,100 @@
+/* global.css */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+}
+
+body {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+button {
+  cursor: pointer;
+}
+
+@layer utilities {
+  .site-container {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (width >= 48rem) {
+    .site-container {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .site-container {
+      padding-inline: 2rem;
+    }
+  }
+}
+
+@theme inline {
+  /* color */
+  --color-brand: #6658ff;
+  --color-brand-hover: #5546f0;
+
+  --color-primary: #111827;
+  --color-primary-2: #011230;
+  --color-secondary: #4b5563;
+  --color-tertiary: #6b7280;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-info: #2563eb;
+  --color-error: #dc2626;
+
+  --color-base-black: #121212;
+  --color-page-back: #f8fafc;
+  --color-card: #ffffff;
+  --color-border: #e5e7eb;
+
+  --color-primary-500: #6658ff;
+
+  --color-gray-100: #d0d3d9;
+  --color-gray-400: #858d9d;
+  --color-gray-900: #2b2f38;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
