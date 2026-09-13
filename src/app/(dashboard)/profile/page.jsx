@@ -21,7 +21,7 @@ import {
   updateCustomerProfile,
   updateCustomerPassword,
   createProfileFormData,
-} from "@/lib/profileApi";
+} from "@/next-api/profileApi";
 import { API_BASE_URL } from "@/config/base-url";
 
 export default function ProfilePage() {
