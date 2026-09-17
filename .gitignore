@@ -13,6 +13,9 @@
 # agents
 .agents
 
+# graphify
+graphify-out/
+
 # testing
 /coverage
 
