@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Star, Check } from "lucide-react";
 import { ButtonArrowIcon } from "@/icons";
 import { H5 } from "@/components/ui/Typography";
+import { LinkButton } from "@/components/ui/LinkButton";
 
 const defaultLogos = [
   "/logo_image/facebook.png",
@@ -28,10 +29,15 @@ export default function SellerCard({ seller, href }) {
     logos = defaultLogos,
   } = seller;
 
-  const cardContent = (
-    <div className="group relative bg-card rounded-[24px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">
+  return (
+    <div className="group relative bg-card rounded-[12px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">
+      {/* Whole-card link */}
+      {href && (
+        <Link href={href} className="absolute inset-0 z-0" aria-label={name} />
+      )}
+
       {/* Top Banner Image */}
-      <div className="relative w-full h-[115px] overflow-hidden bg-gray-100">
+      <div className="relative w-full h-23 overflow-hidden bg-gray-100">
         <Image
           src={banner}
           alt={`${name} banner`}
@@ -44,12 +50,12 @@ export default function SellerCard({ seller, href }) {
       {/* Card Body */}
       <div className="px-5 pb-5 pt-0 flex flex-col items-center">
         {/* Overlapping Avatar */}
-        <div className="relative size-16 -mt-8 rounded-full border-[3px] border-white overflow-hidden shadow-sm shrink-0 bg-white z-10">
+        <div className="relative size-14 -mt-7 rounded-full border-1 border-white overflow-hidden shadow-sm shrink-0 bg-white z-10">
           <Image
             src={avatar}
             alt={name}
             fill
-            sizes="64px"
+            sizes="56px"
             className="object-cover"
           />
         </div>
@@ -60,7 +66,7 @@ export default function SellerCard({ seller, href }) {
             {name}
           </H5>
           {verified && (
-            <span className="size-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0">
+            <span className="size-4 rounded-full bg-info text-white flex items-center justify-center shrink-0">
               <Check className="size-2.5" strokeWidth={3.5} />
             </span>
           )}
@@ -73,8 +79,8 @@ export default function SellerCard({ seller, href }) {
 
         {/* Rating Line */}
         <div className="mt-1 flex items-center justify-center gap-1.5 text-[12px]">
-          <Star className="size-3.5 fill-[#F59E0B] text-[#F59E0B] shrink-0" />
-          <span className="font-semibold text-[#2563EB]">{rating}</span>
+          <Star className="size-3.5 fill-warning text-warning shrink-0" />
+          <span className="font-semibold text-info">{rating}</span>
           <span className="text-gray-400">•</span>
           <span className="text-gray-400">{reviews}</span>
         </div>
@@ -84,7 +90,7 @@ export default function SellerCard({ seller, href }) {
           {logos.map((logo, idx) => (
             <div
               key={idx}
-              className="size-9 rounded-xl bg-[#F3F4F6] flex items-center justify-center shrink-0 p-1.5"
+              className="size-9 rounded-[6px] bg-gray-50 flex items-center justify-center shrink-0 p-1.5"
             >
               <Image
                 src={typeof logo === "string" ? logo : logo.src}
@@ -95,27 +101,24 @@ export default function SellerCard({ seller, href }) {
               />
             </div>
           ))}
-          <div className="h-9 px-2.5 rounded-xl bg-[#F3F4F6] flex items-center justify-center text-[11px] font-semibold text-gray-700 shrink-0">
+          <div className="h-9 px-2.5 rounded-[6px] bg-gray-50 flex items-center justify-center text-[11px] font-semibold text-gray-700 shrink-0">
             {extraCount}
           </div>
         </div>
 
         {/* Action Button (Transitions on card hover) */}
-        <div className="mt-4 w-full">
-          <div className="w-full py-2.5 px-4 rounded-xl border border-border bg-white text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 group-hover:bg-brand group-hover:text-white group-hover:border-brand shadow-2xs">
-            <span>View Store</span>
-            <span className="hidden group-hover:inline-flex transition-transform duration-200">
-              <ButtonArrowIcon size={16} />
-            </span>
-          </div>
-        </div>
+        <LinkButton
+          href={href}
+          variant="outline-group"
+          rounded="xl"
+          className="relative z-10 mt-4 w-full py-2.5"
+        >
+          <span>View Store</span>
+          <span className="hidden group-hover:inline-flex transition-transform duration-200">
+            <ButtonArrowIcon size={16} />
+          </span>
+        </LinkButton>
       </div>
     </div>
   );
-
-  if (href) {
-    return <Link href={href}>{cardContent}</Link>;
-  }
-
-  return cardContent;
 }

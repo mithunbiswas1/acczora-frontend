@@ -64,7 +64,9 @@ button {
 
   --color-primary-500: #6658ff;
 
+  --color-gray-50: #F0F1F3;
   --color-gray-100: #d0d3d9;
+  --color-gray-300: #989FAD;
   --color-gray-400: #858d9d;
   --color-gray-900: #2b2f38;
 }

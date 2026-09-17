@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { FaFacebookF, FaInstagram, FaTwitter } from "react-icons/fa6";
+import { H3, H5 } from "@/components/ui/Typography";
 
 const marketplaceLinks = [
   { label: "Browse Products", href: "/products" },
@@ -45,6 +45,24 @@ const legalLinks = [
   { label: "Refund Policy", href: "/refund" },
 ];
 
+const socialLinks = [
+  {
+    label: "Facebook",
+    href: "https://facebook.com",
+    icon: "/social/facebook.png",
+  },
+  {
+    label: "Instagram",
+    href: "https://instagram.com",
+    icon: "/social/instagram.png",
+  },
+  {
+    label: "Twitter",
+    href: "https://twitter.com",
+    icon: "/social/twitter.png",
+  },
+];
+
 export default function Footer() {
   return (
     <footer className="w-full bg-[#111827] text-white">
@@ -53,37 +71,37 @@ export default function Footer() {
         {/* Row 1: Brand/Tagline + Marketplace, For Buyers, For Sellers */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12">
           {/* Brand & Tagline */}
-          <div className="md:col-span-12 lg:col-span-5">
+          <div className="md:col-span-12 lg:col-span-5 h-full flex flex-col">
             <Link href="/" className="inline-block" aria-label="ACCZORA Home">
               <Image
                 src="/logo.png"
                 alt="ACCZORA"
-                width={140}
-                height={36}
-                className="h-9 w-auto object-contain brightness-0 invert"
+                width={161}
+                height={40}
+                className="h-10 w-auto object-contain brightness-0 invert"
                 priority
               />
             </Link>
-            <p className="mt-6 text-[20px] sm:text-[24px] font-normal leading-[160%] text-white max-w-sm">
+            <H3 className="mt-auto font-normal text-gray-100">
               Buy and sell digital products
               <br />
               with confidence.
-            </p>
+            </H3>
           </div>
 
           {/* Right Link Columns */}
           <div className="md:col-span-12 lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
             {/* Marketplace */}
             <div>
-              <h3 className="text-[16px] font-semibold text-white leading-[150%] mb-4 sm:mb-5">
+              <H5 className="font-semibold text-white mb-4 lg:mb-6">
                 Marketplace
-              </h3>
-              <ul className="space-y-3">
+              </H5>
+              <ul className="space-y-2">
                 {marketplaceLinks.map((item) => (
                   <li key={item.label}>
                     <Link
                       href={item.href}
-                      className="text-[16px] font-normal text-gray-400 hover:text-white transition-colors duration-200 leading-[150%]"
+                      className="text-[16px] font-normal text-gray-300 hover:text-white transition-colors duration-200 leading-[150%]"
                     >
                       {item.label}
                     </Link>
@@ -94,10 +112,10 @@ export default function Footer() {
 
             {/* For Buyers */}
             <div>
-              <h3 className="text-[16px] font-semibold text-white leading-[150%] mb-4 sm:mb-5">
+              <H5 className="font-semibold text-white mb-4 lg:mb-6">
                 For Buyers
-              </h3>
-              <ul className="space-y-3">
+              </H5>
+              <ul className="space-y-2">
                 {buyerLinks.map((item) => (
                   <li key={item.label}>
                     <Link
@@ -113,10 +131,10 @@ export default function Footer() {
 
             {/* For Sellers */}
             <div>
-              <h3 className="text-[16px] font-semibold text-white leading-[150%] mb-4 sm:mb-5">
+              <H5 className="font-semibold text-white mb-4 lg:mb-6">
                 For Sellers
-              </h3>
-              <ul className="space-y-3">
+              </H5>
+              <ul className="space-y-2">
                 {sellerLinks.map((item) => (
                   <li key={item.label}>
                     <Link
@@ -139,38 +157,24 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12">
           {/* Follow Us & Repeated Tagline */}
           <div className="md:col-span-12 lg:col-span-5">
-            <h3 className="text-[16px] font-semibold text-white leading-[150%] mb-4">
-              Follow Us
-            </h3>
-            {/* Social Icons */}
-            <div className="flex items-center gap-3">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Facebook"
-                className="size-8 rounded-full bg-[#1877F2] text-white flex items-center justify-center transition-transform hover:scale-110 shadow-xs"
-              >
-                <FaFacebookF className="size-4" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Instagram"
-                className="size-8 rounded-full bg-gradient-to-tr from-[#FD1D1D] via-[#E1306C] to-[#C13584] text-white flex items-center justify-center transition-transform hover:scale-110 shadow-xs"
-              >
-                <FaInstagram className="size-4" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Twitter"
-                className="size-8 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center transition-transform hover:scale-110 shadow-xs"
-              >
-                <FaTwitter className="size-4" />
-              </a>
+            <div className="flex items-center gap-6 mb-4 lg:mb-6">
+              <H5 className="font-semibold text-white">
+                Follow Us
+              </H5>
+              {/* Social Icons */}
+              <div className="flex items-center gap-3">
+                {socialLinks.map(({ label, href, icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                  >
+                    <Image src={icon} alt={label} width={24} height={24} />
+                  </a>
+                ))}
+              </div>
             </div>
 
             <p className="mt-8 text-[20px] sm:text-[24px] font-normal leading-[160%] text-white max-w-sm">
@@ -184,10 +188,10 @@ export default function Footer() {
           <div className="md:col-span-12 lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
             {/* Support */}
             <div>
-              <h3 className="text-[16px] font-semibold text-white leading-[150%] mb-4 sm:mb-5">
+              <H5 className="font-semibold text-white mb-4 lg:mb-6">
                 Support
-              </h3>
-              <ul className="space-y-3">
+              </H5>
+              <ul className="space-y-2">
                 {supportLinks.map((item) => (
                   <li key={item.label}>
                     <Link
@@ -203,10 +207,10 @@ export default function Footer() {
 
             {/* Company */}
             <div>
-              <h3 className="text-[16px] font-semibold text-white leading-[150%] mb-4 sm:mb-5">
+              <H5 className="font-semibold text-white mb-4 lg:mb-6">
                 Company
-              </h3>
-              <ul className="space-y-3">
+              </H5>
+              <ul className="space-y-2">
                 {companyLinks.map((item) => (
                   <li key={item.label}>
                     <Link
@@ -222,10 +226,10 @@ export default function Footer() {
 
             {/* Legal */}
             <div>
-              <h3 className="text-[16px] font-semibold text-white leading-[150%] mb-4 sm:mb-5">
+              <H5 className="font-semibold text-white mb-4 lg:mb-6">
                 Legal
-              </h3>
-              <ul className="space-y-3">
+              </H5>
+              <ul className="space-y-2">
                 {legalLinks.map((item) => (
                   <li key={item.label}>
                     <Link

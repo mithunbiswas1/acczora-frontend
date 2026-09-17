@@ -125,29 +125,23 @@ export default function TopSellers() {
     <section className="w-full py-10 lg:py-16">
       <div className="site-container">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <H2 className="text-primary font-bold text-[28px] sm:text-[32px] lg:text-[36px] leading-[120%]">
-              Top Sellers
-            </H2>
-            <P className="mt-1 text-sm sm:text-base text-secondary">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 md:mb-10 lg:mb-15">
+          {/* Header */}
+          <div className="text-center md:text-left">
+            <H2 className="ml-0 pl-0">Top Sellers</H2>
+            <P className="mt-2 md:mt-3 lg:mt-4 mx-auto">
               Meet trusted sellers from our growing marketplace.
             </P>
           </div>
 
-          <LinkButton
-            href="/sellers"
-            variant="solid"
-            size="md"
-            className="self-start sm:self-auto"
-          >
+          <LinkButton href="/sellers" variant="solid" size="lg">
             <span>View All Sellers</span>
             <ButtonArrowIcon size={18} />
           </LinkButton>
         </div>
 
         {/* Sellers Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-4.5 xl:gap-6">
           {sellers.map((seller) => (
             <SellerCard
               key={seller.id}

@@ -10,9 +10,11 @@ const linkButtonVariants = cva(
     variants: {
       variant: {
         solid:
-          "text-white bg-brand border border-brand hover:bg-brand-hover shadow-xs hover:shadow",
+          "text-white bg-brand border border-brand hover:bg-bran d-hover shadow-xs hover:shadow",
         outline:
           "text-brand border border-brand bg-transparent hover:text-white hover:bg-brand",
+        "outline-group":
+          "text-primary border border-border bg-white shadow-2xs group-hover:bg-brand group-hover:text-white group-hover:border-brand",
         "outline-secondary":
           "text-base-black border border-secondary bg-transparent hover:border-primary hover:bg-gray-50",
         secondary:

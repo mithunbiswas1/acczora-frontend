@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/cn";
-import { H2, P } from "@/components/ui/Typography";
+import { H2, H4, P } from "@/components/ui/Typography";
 import { LinkButton } from "@/components/ui/LinkButton";
 import {
   ButtonArrowIcon,
@@ -76,6 +76,30 @@ const sellerSteps = [
     Icon: ReceiveTrayIcon,
   },
 ];
+
+function StepCard({ step, className, onMouseEnter, onMouseLeave }) {
+  const { title, description, Icon } = step;
+
+  return (
+    <div
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className={cn(
+        "group flex flex-col justify-start bg-card border border-border rounded-[20px] p-6 transition-all duration-200 cursor-pointer hover:border-brand",
+        className
+      )}
+    >
+      <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 bg-[#F3F4F6] text-gray-500 transition-all duration-200 group-hover:bg-brand group-hover:text-white">
+        <Icon size={22} />
+      </div>
+
+      <H4 className="mt-17.5 transition-colors duration-200 group-hover:text-brand">
+        {title}
+      </H4>
+      <P className="mt-2">{description}</P>
+    </div>
+  );
+}
 
 export default function HowItWorks() {
   const [role, setRole] = useState("buyer"); // "buyer" | "seller"
@@ -219,35 +243,16 @@ export default function HowItWorks() {
           </div>
         </div>
 
-        {/* Steps Grid - following Popular Categories cards hover pattern */}
+        {/* Steps Grid */}
         <div className="mt-8 lg:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
-          {steps.map((step) => {
-            const { id, title, description, Icon } = step;
-
-            return (
-              <div
-                key={id}
-                onMouseEnter={() => setHoveredStep(id)}
-                onMouseLeave={() => setHoveredStep(null)}
-                className="group bg-card border border-border rounded-[20px] p-6 flex flex-col justify-start transition-all duration-200 cursor-pointer text-left hover:border-brand"
-              >
-                {/* Icon Badge - transforms on card hover */}
-                <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 bg-[#F3F4F6] text-gray-500 transition-all duration-200 group-hover:bg-brand group-hover:text-white">
-                  <Icon size={22} />
-                </div>
-
-                {/* Title - changes color on card hover */}
-                <h3 className="mt-6 text-[16px] font-semibold leading-[120%] text-primary transition-colors duration-200 group-hover:text-brand">
-                  {title}
-                </h3>
-
-                {/* Description */}
-                <p className="mt-2.5 text-[14px] font-medium text-secondary leading-[160%]">
-                  {description}
-                </p>
-              </div>
-            );
-          })}
+          {steps.map((step) => (
+            <StepCard
+              key={step.id}
+              step={step}
+              onMouseEnter={() => setHoveredStep(step.id)}
+              onMouseLeave={() => setHoveredStep(null)}
+            />
+          ))}
         </div>
 
         {/* Bottom CTA Button */}

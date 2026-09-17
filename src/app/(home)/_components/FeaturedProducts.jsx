@@ -192,7 +192,7 @@ export default function FeaturedProducts() {
             </P>
           </div>
 
-          <LinkButton href="/products" variant="solid" size="md">
+          <LinkButton href="/products" variant="solid" size="lg">
             <span>View All Products</span>
             <ButtonArrowIcon size={18} />
           </LinkButton>
