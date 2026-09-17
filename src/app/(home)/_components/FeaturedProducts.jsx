@@ -12,7 +12,7 @@ const products = [
     id: 1,
     category: "Social Media",
     title: "Facebook Account",
-    specs: "USA • 10K+ Followers • Aged",
+    specs: ["USA", "10K+ Followers", "Aged"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -33,7 +33,7 @@ const products = [
     id: 2,
     category: "Email",
     title: "Gmail Account",
-    specs: "Premium • 5 Years Old • Verified",
+    specs: ["Premium", "5 Years Old", "Verified"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -54,7 +54,7 @@ const products = [
     id: 3,
     category: "Gaming",
     title: "Steam Gaming Account",
-    specs: "Level 80 • 25+ Games",
+    specs: ["Level 80", "25+ Games"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -75,7 +75,7 @@ const products = [
     id: 4,
     category: "AI Tools",
     title: "Claude Account",
-    specs: "Pro • 1 Month • Full Access",
+    specs: ["Pro", "1 Month", "Full Access"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -96,7 +96,7 @@ const products = [
     id: 5,
     category: "Business",
     title: "Amazon Account",
-    specs: "USA • Verified • Aged",
+    specs: ["USA", "Verified", "Aged"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -117,7 +117,7 @@ const products = [
     id: 6,
     category: "Developer",
     title: "Visual Studio Account",
-    specs: "Verified • Ready to Use",
+    specs: ["Verified", "Ready to Use"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -138,7 +138,7 @@ const products = [
     id: 7,
     category: "Streaming",
     title: "Netflix Premium",
-    specs: "30 Days • Premium",
+    specs: ["30 Days", "Premium"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -159,7 +159,7 @@ const products = [
     id: 8,
     category: "Software",
     title: "Software License",
-    specs: "1 Year • Full Access",
+    specs: ["1 Year", "Full Access"],
     inStock: true,
     instantDelivery: true,
     isBestSeller: true,
@@ -180,13 +180,14 @@ const products = [
 
 export default function FeaturedProducts() {
   return (
-    <section className="w-full py-10 lg:py-16">
+    <section className="w-full py-8 md:py-15 lg:py-20 xl:py-24">
       <div className="site-container">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <H2 className="text-primary font-bold">Featured Products</H2>
-            <P className="mt-1 text-sm text-tertiary">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 md:mb-10 lg:mb-15">
+          {/* Header */}
+          <div className="text-center md:text-left">
+            <H2 className="ml-0 pl-0">Featured Products</H2>
+            <P className="mt-2 md:mt-3 lg:mt-4 mx-auto">
               Handpicked offers from trusted sellers.
             </P>
           </div>
@@ -198,7 +199,7 @@ export default function FeaturedProducts() {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-4.5 xl:gap-6">
           {products.map((product) => (
             <ProductCard
               key={product.id}

@@ -7,13 +7,13 @@ import { cn } from "@/lib/cn";
 const typographyVariants = cva("transition-colors", {
   variants: {
     variant: {
-      h1: "text-[32px] sm:text-[40px] lg:text-[46px] font-bold tracking-tight text-primary leading-[120%]",
-      h2: "text-[26px] sm:text-[30px] lg:text-[32px] font-semibold tracking-tight text-primary leading-[120%]",
+      h1: "text-[36px] xl:text-[46px] font-bold tracking-tight text-primary leading-[120%]",
+      h2: "text-[24px] lg:text-[32px] font-semibold tracking-tight text-primary leading-[120%]",
       h3: "text-[20px] sm:text-[24px] font-semibold text-primary leading-[120%]",
       h4: "text-[18px] sm:text-[20px] font-semibold text-primary leading-[120%]",
       h5: "text-base font-semibold text-primary leading-[120%]",
       h6: "text-xs font-semibold text-primary leading-[120%]",
-      p: "text-sm sm:text-base font-medium text-secondary leading-[160%]",
+      p: "text-base font-medium text-secondary leading-[160%]",
       caption: "text-xs font-medium text-tertiary leading-[160%]",
       default: "",
     },

@@ -18,7 +18,7 @@ const linkButtonVariants = cva(
         secondary:
           "text-primary bg-gray-100 border border-transparent hover:bg-gray-200",
         pill:
-          "text-brand border border-brand rounded-full hover:text-white hover:bg-brand",
+          "text-secondary-500 border border-secondary-500 !rounded-full hover:text-white hover:bg-brand",
         "pill-solid":
           "text-white bg-brand border border-brand rounded-full hover:bg-brand-hover",
         ghost:
@@ -28,8 +28,8 @@ const linkButtonVariants = cva(
         sm: "px-3.5 py-1.5 text-xs",
         default: "px-4 py-2 text-sm",
         md: "px-5 py-2.5 text-sm",
-        lg: "px-6 py-3 text-sm sm:text-base",
-        xl: "px-7 py-3.5 text-base",
+        lg: "px-5 py-2.5 xl:px-6 xl:py-3 text-base",
+        xl: "px-6 py-3.5 text-base",
       },
       rounded: {
         default: "rounded-lg",

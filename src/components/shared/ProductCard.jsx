@@ -8,13 +8,12 @@ import Image from "next/image";
 import { Star, Check } from "lucide-react";
 import { HeartIcon, HeartFillIcon } from "@/icons";
 import { H5, H6, Caption } from "@/components/ui/Typography";
-import { cn } from "@/lib/cn";
 
 export default function ProductCard({ product, href }) {
   const [isLiked, setIsLiked] = useState(false);
 
   return (
-    <div className="group relative bg-card rounded-[24px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">
+    <div className="group relative bg-card rounded-[12px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">
       {/* Optional Card Link */}
       {href && (
         <Link
@@ -32,13 +31,13 @@ export default function ProductCard({ product, href }) {
               product.gradient ||
               `linear-gradient(to top right, ${product.bg || "#066BDA1A"} 0%, transparent 100%)`,
           }}
-          className="relative w-full h-[145px] p-[14px] flex items-center rounded-t-[12px] overflow-hidden"
+          className="relative w-full h-29 p-[14px] flex items-end"
         >
           {/* Brand Logo (Image from logo_image) */}
           <div className="flex items-center transition-transform duration-200">
-            {product.image || product.logo_image || product.logo ? (
+            {product.image ? (
               <Image
-                src={product.image || product.logo_image || product.logo}
+                src={product.image}
                 alt={product.title}
                 width={56}
                 height={56}
@@ -73,38 +72,38 @@ export default function ProductCard({ product, href }) {
 
           {/* Best Seller Badge (Bottom-Right: 14px) */}
           {product.isBestSeller && (
-            <span className="absolute bottom-[14px] right-[14px] px-3 py-1 text-[11px] font-medium text-[#374151] bg-[#E5E7EB]/85 backdrop-blur-xs rounded-full border border-gray-200/50 shadow-2xs">
+            <span className="absolute bottom-[14px] right-[14px] px-1.5 py-0.5 text-[10px] font-medium text-primary bg-primary/6 rounded-full">
               Best Seller
             </span>
           )}
         </div>
 
         {/* Content Body */}
-        <div className="p-5 pt-4">
+        <div className="p-4">
           {/* Category Badge */}
-          <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold leading-[80%] align-middle text-[#374151] bg-[#F3F4F6] rounded-full w-fit">
+          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-primary bg-primary/6 rounded-full">
             {product.category}
           </span>
 
           {/* Title */}
-          <H5 className="mt-2.5 text-primary transition-colors duration-200 group-hover:text-brand line-clamp-1 align-middle">
+          <H5 className="mt-2 transition-colors duration-200 group-hover:text-brand line-clamp-1 align-middle">
             {product.title}
           </H5>
 
           {/* Specs */}
           <Caption className="mt-1.5 line-clamp-1 align-middle">
-            {product.specs}
+            {product.specs.join("\u00A0\u00A0 • \u00A0\u00A0")}
           </Caption>
 
           {/* Status Badges */}
           <div className="mt-3 flex items-center gap-2">
             {product.inStock && (
-              <span className="px-2.5 py-0.5 text-[11px] font-medium text-[#10B981] bg-[#ECFDF5] rounded-full">
+              <span className="px-1.5 py-0.5 text-[10px] font-medium text-success bg-success/10 rounded-full">
                 In Stock
               </span>
             )}
             {product.instantDelivery && (
-              <span className="px-2.5 py-0.5 text-[11px] font-medium text-[#8B5CF6] bg-[#F3E8FF] rounded-full">
+              <span className="px-1.5 py-0.5 text-[10px] font-medium text-secondary-600 bg-secondary-600/10 rounded-full">
                 Instant Delivery
               </span>
             )}
@@ -145,7 +144,7 @@ export default function ProductCard({ product, href }) {
 
           {/* Divider & Footer */}
           <div className="mt-4 pt-3.5 border-t border-[#F3F4F6] flex items-center justify-between">
-            <span className="text-[20px] font-semibold leading-[120%] tracking-[0.5px] text-[#111827] align-middle">
+            <span className="text-[20px] font-semibold leading-[120%] tracking-[0.5px] text-primary align-middle">
               ${product.price.toFixed(2)}
             </span>
             <button
@@ -153,7 +152,7 @@ export default function ProductCard({ product, href }) {
               onClick={(e) => {
                 e.stopPropagation();
               }}
-              className="relative z-10 px-5 py-2 bg-[#16A34A] hover:bg-[#15803D] text-white text-[12px] font-semibold leading-[130%] tracking-normal rounded-[10px] transition-colors shadow-2xs cursor-pointer"
+              className="relative z-10 px-5 py-2 bg-success hover:bg-success/90  text-white text-[12px] font-semibold leading-[130%] tracking-normal rounded-[10px] transition-colors shadow-2xs cursor-pointer"
             >
               Buy Now
             </button>

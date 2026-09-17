@@ -27,13 +27,13 @@ button {
     padding-inline: 1rem;
   }
 
-  @media (width >= 48rem) {
+  @media (width >=48rem) {
     .site-container {
       padding-inline: 1.5rem;
     }
   }
 
-  @media (width >= 64rem) {
+  @media (width >=64rem) {
     .site-container {
       padding-inline: 2rem;
     }
@@ -59,6 +59,9 @@ button {
   --color-card: #ffffff;
   --color-border: #e5e7eb;
 
+  --color-secondary-500: #8B5CF6;
+  --color-secondary-600: #7E54E0;
+
   --color-primary-500: #6658ff;
 
   --color-gray-100: #d0d3d9;
@@ -71,6 +74,7 @@ button {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -85,6 +89,7 @@ button {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
@@ -94,6 +99,7 @@ button {
   0% {
     transform: translateX(-50%);
   }
+
   100% {
     transform: translateX(0);
   }

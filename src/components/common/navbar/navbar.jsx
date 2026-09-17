@@ -5,16 +5,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Search,
-  Heart,
-  ShoppingBasket,
-  ChevronDown,
-  Menu,
-  X,
-} from "lucide-react";
+import { Heart, ShoppingBasket, ChevronDown, Menu, X } from "lucide-react";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { IconButton } from "@/components/ui/IconButton";
+import SearchBar from "./SearchBar";
 
 const navLinks = [
   { name: "Marketplace", href: "/marketplace" },
@@ -49,7 +43,7 @@ export default function Navbar() {
     <>
       {/* DESKTOP NAVBAR */}
       <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
-        <nav className="container mx-auto px-4 md:px-6 lg:px-12 py-5 flex items-center">
+        <nav className="container max-w-full mx-auto px-4 md:px-6 lg:px-12 py-5 flex items-center">
           {/* Mobile Menu Button */}
           <button
             type="button"
@@ -72,14 +66,14 @@ export default function Navbar() {
               width={129}
               height={32}
               priority
-              className="h-auto w-32 object-contain"
+              className="h-auto w-20.5 xl:w-32 object-contain"
               sizes="(max-width: 768px) 128px, 129px"
               quality={90}
             />
           </Link>
 
           {/* Desktop Center Nav */}
-          <div className="ml-10 mr-3 hidden items-center lg:flex">
+          <div className="ml-6 xl:ml-10 mr-3 hidden items-center lg:flex">
             {navLinks.map((link) => {
               // Check if menu item has subItems (dropdown)
               if (link.subItems) {
@@ -96,9 +90,8 @@ export default function Navbar() {
                     >
                       {link.name}
                       <ChevronDown
-                        className={`size-6 transition-transform duration-200 ${
-                          submenuOpen ? "rotate-180" : ""
-                        }`}
+                        className={`size-4 xl:size-5 transition-transform duration-200 ${submenuOpen ? "rotate-180" : ""
+                          }`}
                         strokeWidth={1.8}
                       />
                     </button>
@@ -128,7 +121,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="px-3 py-1.5 text-base font-medium text-primary hover:text-brand transition-colors "
+                  className="px-2 py-1 xl:px-3 xl:py-1.5 text-sm xl:text-base font-medium text-primary hover:text-brand transition-colors "
                 >
                   {link.name}
                 </Link>
@@ -147,16 +140,8 @@ export default function Navbar() {
 
           {/* Desktop Right Actions */}
           <div className="ml-auto items-center gap-8 flex">
-            <div className="hidden md:flex items-center gap-3 px-4 py-2.5 rounded-[10px] border border-border transition-all focus-within:border-brand">
-              <Search className="size-5 text-primary" />
-              <input
-                type="text"
-                placeholder="Search products"
-                className="w-29 text-sm text-primary outline-none placeholder:text-primary"
-              />
-            </div>
-
             <div className="hidden md:flex items-center gap-3.5">
+              <SearchBar />
               <IconButton href="/wishlist" icon={Heart} label="Wishlist" />
               <IconButton href="/cart" icon={ShoppingBasket} label="Cart" />
             </div>

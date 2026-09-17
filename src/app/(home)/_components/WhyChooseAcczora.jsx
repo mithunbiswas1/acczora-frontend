@@ -3,7 +3,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
-import { H2, P } from "@/components/ui/Typography";
+import { H2, H3, H4, P } from "@/components/ui/Typography";
 import {
   VerifiedSellersIcon,
   SecurePaymentsIcon,
@@ -60,7 +60,7 @@ function FeatureCard({ feature, className }) {
   return (
     <div
       className={cn(
-        "bg-card border border-border rounded-[20px] p-6 lg:p-7 flex flex-col justify-start transition-all duration-200 hover:border-brand/40 hover:shadow-sm",
+        " flex flex-col justify-between bg-card border border-border rounded-[16px] p-6",
         className
       )}
     >
@@ -73,13 +73,8 @@ function FeatureCard({ feature, className }) {
         <Icon size={size} color={color} />
       </div>
 
-      <h3 className="mt-6 text-[18px] font-semibold text-primary leading-[120%]">
-        {title}
-      </h3>
-
-      <p className="mt-2.5 text-[16px] font-medium text-secondary leading-[160%]">
-        {description}
-      </p>
+      <H4 className="mt-6">{title}</H4>
+      <P className="mt-2">{description}</P>
     </div>
   );
 }
@@ -89,22 +84,20 @@ export default function WhyChooseAcczora() {
     features;
 
   return (
-    <section className="w-full py-12 lg:py-18">
+    <section className="w-full py-8 md:py-15 lg:py-20 xl:py-24">
       <div className="site-container">
-        {/* Section Header */}
-        <div className="text-center mb-10 lg:mb-12">
-          <H2 className="text-primary font-bold text-[28px] sm:text-[32px] lg:text-[36px] leading-[120%]">
-            Why Choose ACCZORA?
-          </H2>
-          <P className="mt-2.5 max-w-2xl mx-auto text-base font-medium text-secondary leading-[160%]">
+        {/* Header */}
+        <div className="text-center mb-8 md:mb-10 lg:mb-15">
+          <H2>Why Choose ACCZORA?</H2>
+          <P className="mt-2 md:mt-3 lg:mt-4 mx-auto">
             A safer, simpler way to buy and sell digital accounts online.
           </P>
         </div>
 
         {/* ================= DESKTOP LAYOUT (lg:) ================= */}
-        <div className="hidden lg:grid lg:grid-cols-3 gap-6 items-stretch">
+        <div className="hidden lg:grid lg:grid-cols-3 gap-4 lg:gap-6 items-stretch">
           {/* Left Column: 2 cards */}
-          <div className="grid grid-rows-2 gap-6">
+          <div className="grid grid-rows-2 gap-4 lg:gap-6">
             <FeatureCard feature={verifiedSellers} />
             <FeatureCard feature={securePayments} />
           </div>

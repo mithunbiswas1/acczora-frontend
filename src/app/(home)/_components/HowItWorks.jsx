@@ -86,19 +86,17 @@ export default function HowItWorks() {
   return (
     <section className="w-full py-12 lg:py-20">
       <div className="site-container">
-        {/* Section Header */}
-        <div className="text-center">
-          <H2 className="text-primary font-bold text-[28px] sm:text-[32px] lg:text-[36px] leading-[120%]">
-            How It Works
-          </H2>
-          <P className="mt-2.5 max-w-xl mx-auto text-base font-medium text-secondary leading-[160%]">
+        {/* Header */}
+        <div className="text-center mb-6 md:mb-8">
+          <H2>How It Works</H2>
+          <P className="mt-2 md:mt-3 lg:mt-4 mx-auto">
             Getting started with ACCZORA is simple.
             <br className="hidden sm:inline" /> Whether you're buying or
             selling, we've got you covered.
           </P>
         </div>
 
-        {/* Role Switcher (Buyer / Seller) */}
+        {/* Role Switcher */}
         <div className="mt-7 flex justify-center">
           <div className="inline-flex p-1 bg-white border border-border rounded-xl shadow-xs">
             <button

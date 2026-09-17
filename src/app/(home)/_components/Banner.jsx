@@ -29,13 +29,13 @@ export default function Banner() {
               </span>
 
               {/* Heading */}
-              <H1 className="mt-3 text-[46px] font-bold leading-[1.2] text-primary">
+              <H1 className="mt-3 text-primary">
                 Your Trusted Marketplace for{" "}
                 <span className="text-brand">Digital Accounts</span>
               </H1>
 
               {/* Description */}
-              <P className="mt-6 text-base leading-[1.6]">
+              <P className="mt-6">
                 Buy and sell digital accounts &amp; assets from trusted sellers
                 with secure payments, buyer protection, and fast delivery.
               </P>
@@ -45,7 +45,7 @@ export default function Banner() {
                 type="text"
                 placeholder="Search accounts, games, software & more..."
                 containerClassName="mt-6"
-                className="h-[60px] rounded-[14px] border-border bg-white text-base leading-[1.2] text-tertiary placeholder:text-tertiary pl-14 pr-16 focus:ring-1 focus:ring-brand focus:border-brand shadow-none"
+                className="h-[50px] xl:h-[60px] rounded-[14px] border-border bg-white text-base leading-[1.2] text-tertiary placeholder:text-tertiary pl-14 pr-16 focus:ring-1 focus:ring-brand focus:border-brand shadow-none"
                 prefix={
                   <div
                     aria-label="Search"
@@ -67,25 +67,25 @@ export default function Banner() {
 
               {/* CTA Buttons */}
               <div className="mt-12.5 flex items-center gap-3.5">
-                <LinkButton href="/#" variant="solid" size="lg">
+                <LinkButton href="#" variant="solid" size="lg">
                   Explore Marketplace
                 </LinkButton>
 
-                <LinkButton href="/#" variant="outline-secondary" size="lg">
+                <LinkButton href="#" variant="outline-secondary" size="lg">
                   Start Selling
                 </LinkButton>
               </div>
             </div>
 
             {/* Benefits */}
-            <div className="mt-12.5 flex flex-wrap gap-x-7 gap-y-4">
+            <div className="mt-12.5 inline-flex flex-wrap xl:flex-nowrap xl:whitespace-nowrap gap-x-7 gap-y-4">
               {benefits.map((benefit) => (
                 <div key={benefit} className="flex items-center gap-2">
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success text-white">
                     <Check className="h-3.5 w-3.5" strokeWidth={3} />
                   </span>
 
-                  <P className="text-base text-primary font-medium leading-[1.6]">
+                  <P className="text-primary">
                     {benefit}
                   </P>
                 </div>
