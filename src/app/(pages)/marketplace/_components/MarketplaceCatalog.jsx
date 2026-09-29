@@ -3,6 +3,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import SearchAndCategories from "./SearchAndCategories";
 import FilterSidebar from "./FilterSidebar";
@@ -24,6 +25,9 @@ function toggleValue(list, value) {
 }
 
 export default function MarketplaceCatalog() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sort, setSort] = useState("popular");
@@ -39,10 +43,32 @@ export default function MarketplaceCatalog() {
   const [activeDelivery, setActiveDelivery] = useState([]);
   const [activeAvailability, setActiveAvailability] = useState([]);
 
+  // Sync category param from URL query
+  useEffect(() => {
+    if (categoryParam) {
+      const decoded = decodeURIComponent(categoryParam).trim().toLowerCase();
+      const matchedCategory = categories.find(
+        (c) =>
+          c.name.toLowerCase() === decoded ||
+          c.name.toLowerCase().replace(/[^a-z0-9]/g, "-") === decoded ||
+          c.name.toLowerCase().replace(/&/g, "and") === decoded,
+      );
+
+      if (matchedCategory) {
+        setActiveCategories([matchedCategory.name]);
+        if (matchedCategory.subcategories?.length > 0) {
+          const subIds = matchedCategory.subcategories.map((s) => s.id);
+          setActiveSubcategories(subIds);
+        }
+      }
+    }
+  }, [categoryParam]);
+
   const debouncedQuery = useDebounce(query, 300);
 
   const activeFilterCount =
     activeCategories.length +
+
     activePriceRanges.length +
     (customMin || customMax ? 1 : 0) +
     activeRatings.length +

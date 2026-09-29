@@ -11,7 +11,7 @@ export default function AuthCard({
   className = "",
 }) {
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center py-8 sm:py-14 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center py-8 sm:py-14 px-4">
       {/* Top Logo */}
       <div className="mb-6 sm:mb-8 text-center">
         <Link href="/" className="inline-flex items-center justify-center">
@@ -28,7 +28,7 @@ export default function AuthCard({
 
       {/* Main Card */}
       <div
-        className={`w-full max-w-[430px] sm:max-w-[452px] bg-white rounded-2xl border border-gray-200/90 shadow-[0_2px_16px_rgba(0,0,0,0.03)] p-6 sm:p-9 ${className}`}
+        className={`w-full max-w-[430px] sm:max-w-[452px] bg-white rounded-2xl border border-gray- shadow-[0_2px_16px_rgba(0,0,0,0.03)] p-6 sm:p-9 ${className}`}
       >
         {headerExtra}
 

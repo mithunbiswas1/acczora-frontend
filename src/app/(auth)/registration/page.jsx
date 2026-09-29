@@ -184,7 +184,7 @@ export default function RegistrationPage() {
                   setErrors((prev) => ({ ...prev, agreed: "" }));
                 }
               }}
-              className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#6558ff] focus:ring-[#6558ff] accent-[#6558ff] cursor-pointer"
+              className="mt-0.5 w-4 h-4 rounded border-border text-[#6558ff] focus:ring-[#6558ff] accent-[#6558ff] cursor-pointer"
             />
             <span>
               I agree to the{" "}

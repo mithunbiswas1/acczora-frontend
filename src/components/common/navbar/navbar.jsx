@@ -12,18 +12,14 @@ import { IconButton } from "@/components/ui/IconButton";
 import SearchBar from "./SearchBar";
 import SearchModal from "./SearchModal";
 
+import { popularCategories } from "@/data";
+
 const navLinks = [
   { name: "Marketplace", href: "/marketplace" },
   {
     name: "Categories",
-    href: "/categories",
-    subItems: [
-      { name: "All Categories", href: "/categories" },
-      { name: "Electronics", href: "/categories/electronics" },
-      { name: "Fashion", href: "/categories/fashion" },
-      { name: "Home & Living", href: "/categories/home-living" },
-      { name: "Beauty", href: "/categories/beauty" },
-    ],
+    href: "/marketplace",
+    isCategories: true,
   },
   { name: "How it works", href: "/how-it-works" },
 ];
@@ -89,8 +85,8 @@ export default function Navbar() {
           {/* Desktop Center Nav */}
           <div className="ml-6 xl:ml-10 mr-3 hidden items-center lg:flex">
             {navLinks.map((link) => {
-              // Check if menu item has subItems (dropdown)
-              if (link.subItems) {
+              // Check if menu item is Categories (desktop mega menu)
+              if (link.isCategories) {
                 return (
                   <div
                     key={link.name}
@@ -100,29 +96,51 @@ export default function Navbar() {
                   >
                     <button
                       type="button"
-                      className="flex items-center gap-1 px-3 py-2 text-base font-medium text-primary hover:text-brand transition-colors"
+                      onClick={() => setSubmenuOpen((prev) => !prev)}
+                      className="flex items-center gap-1 px-3 py-2 text-base font-medium text-primary hover:text-brand transition-colors cursor-pointer"
                     >
-                      {link.name}
+                      <span>{link.name}</span>
                       <ChevronDown
-                        className={`size-4 xl:size-5 transition-transform duration-200 ${submenuOpen ? "rotate-180" : ""
+                        className={`size-4 xl:size-5 transition-transform duration-200 ${submenuOpen ? "rotate-180 text-brand" : ""
                           }`}
                         strokeWidth={1.8}
                       />
                     </button>
 
-                    {/* Sub Menu */}
+                    {/* Desktop Mega Menu */}
                     {submenuOpen && (
-                      <div className="absolute left-1/2 top-full z-50 w-50 -translate-x-1/2 pt-4">
-                        <div className="border border-gray-100 bg-white shadow-xl">
-                          {link.subItems.map((subItem) => (
-                            <Link
-                              key={subItem.name}
-                              href={subItem.href}
-                              className="block px-4 py-2 text-sm text-primary transition-colors hover:bg-gray-50 hover:text-brand"
-                            >
-                              {subItem.name}
-                            </Link>
-                          ))}
+                      <div className="absolute left-0 top-full z-50 w-[680px] xl:w-[740px] pt-3">
+                        <div className="rounded-2xl border border-border bg-white p-5 animate-in fade-in-50 zoom-in-95 duration-150">
+                          {/* Categories Grid (2 Columns) */}
+                          <div className="grid grid-cols-2 gap-2">
+                            {popularCategories.map((cat) => (
+                              <Link
+                                key={cat.id}
+                                href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
+                                onClick={() => setSubmenuOpen(false)}
+                                className="group flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-50/90 border border-transparent hover:border-gray-100 transition-all duration-150"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div
+                                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-150 group-hover:scale-105"
+                                    style={{ backgroundColor: cat.bg }}
+                                  >
+                                    {cat.Icon && (
+                                      <cat.Icon size={18} color={cat.color} />
+                                    )}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800 group-hover:text-brand transition-colors truncate">
+                                      {cat.name}
+                                    </p>
+                                    <p className="text-xs text-gray-400 truncate">
+                                      {cat.subcategories?.join(", ") || cat.count}
+                                    </p>
+                                  </div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -135,7 +153,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="px-2 py-1 xl:px-3 xl:py-1.5 text-sm xl:text-base font-medium text-primary hover:text-brand transition-colors "
+                  className="px-2 py-1 xl:px-3 xl:py-1.5 text-sm xl:text-base font-medium text-primary hover:text-brand transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -241,7 +259,7 @@ export default function Navbar() {
             {/* Navigation Links */}
             <nav className="flex flex-col space-y-1">
               {navLinks.map((link) => {
-                if (link.subItems) {
+                if (link.isCategories) {
                   return (
                     <div key={link.name} className="flex flex-col">
                       <button
@@ -258,19 +276,52 @@ export default function Navbar() {
                         />
                       </button>
 
-                      {/* Sub Items Accordion */}
+                      {/* Sub Items Accordion with same popular categories */}
                       {mobileSubmenuOpen && (
-                        <div className="ml-3 mt-1 flex flex-col space-y-1 pl-1">
-                          {link.subItems.map((subItem) => (
+                        <div className="ml-2 mt-1 flex flex-col space-y-1 pl-1 max-h-[360px] overflow-y-auto">
+                          {popularCategories.map((cat) => (
                             <Link
-                              key={subItem.name}
-                              href={subItem.href}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="flex min-h-[40px] items-center rounded-md px-3 py-2 text-sm font-medium text-secondary hover:bg-gray-50 hover:text-brand transition-colors"
+                              key={cat.id}
+                              href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                setMobileSubmenuOpen(false);
+                              }}
+                              className="flex items-center justify-between rounded-lg p-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-brand transition-colors"
                             >
-                              {subItem.name}
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div
+                                  className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
+                                  style={{ backgroundColor: cat.bg }}
+                                >
+                                  {cat.Icon && (
+                                    <cat.Icon size={15} color={cat.color} />
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="block text-sm font-medium text-gray-800 truncate">
+                                    {cat.name}
+                                  </span>
+                                  <span className="block text-[11px] text-gray-400 truncate">
+                                    {cat.count}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-xs text-gray-400">→</span>
                             </Link>
                           ))}
+
+                          <Link
+                            href="/marketplace"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              setMobileSubmenuOpen(false);
+                            }}
+                            className="mt-1 flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-brand hover:underline"
+                          >
+                            <span>View All in Marketplace</span>
+                            <ButtonArrowIcon size={12} />
+                          </Link>
                         </div>
                       )}
                     </div>

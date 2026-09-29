@@ -50,7 +50,7 @@ export default function AuthInput({
           className={`w-full px-3.5 py-2.5 sm:py-3 text-sm rounded-lg border bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none transition-colors ${
             error
               ? "border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500"
-              : "border-gray-200 focus:border-[#6558ff] focus:ring-1 focus:ring-[#6558ff]"
+              : "border-border focus:border-[#6558ff] focus:ring-1 focus:ring-[#6558ff]"
           } ${isPassword ? "pr-10" : ""} ${
             disabled ? "opacity-60 cursor-not-allowed bg-gray-50" : ""
           } ${className}`}
