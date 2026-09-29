@@ -93,10 +93,10 @@ function StepCard({ step, className, onMouseEnter, onMouseLeave }) {
         <Icon size={22} />
       </div>
 
-      <H4 className="mt-17.5 transition-colors duration-200 group-hover:text-brand">
+      <H4 className="!text-[16px] mt-17.5 transition-colors duration-200 group-hover:text-brand">
         {title}
       </H4>
-      <P className="mt-2">{description}</P>
+      <P className="!text-[14px] mt-2 line-clamp-2 xl:line-clamp-none">{description}</P>
     </div>
   );
 }
@@ -108,7 +108,7 @@ export default function HowItWorks() {
   const steps = role === "buyer" ? buyerSteps : sellerSteps;
 
   return (
-    <section className="w-full py-12 lg:py-20">
+    <section className="w-full py-8 md:py-15 lg:py-20 xl:py-24">
       <div className="site-container">
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">

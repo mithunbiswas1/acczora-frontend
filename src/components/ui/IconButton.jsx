@@ -12,11 +12,13 @@ const iconButtonVariants = cva(
         default: "text-gray-400 hover:text-brand",
         primary: "text-brand hover:text-brand/80",
         danger: "text-red-500 hover:text-red-600",
+        tertiary: "text-tertiary hover:text-primary",
       },
       size: {
         default: "h-6 w-6",
         sm: "h-5 w-5",
         lg: "h-8 w-8",
+        xs: "h-4 w-4",
       },
     },
     defaultVariants: {

@@ -1,7 +1,23 @@
 // src/components/ui/Input.jsx
 
 import { forwardRef } from "react";
+import { cva } from "class-variance-authority";
 import { cn } from "@/lib/cn";
+
+const inputVariants = cva(
+  "w-full text-base text-primary placeholder:text-tertiary transition-all duration-200 focus:outline-none py-3 px-4",
+  {
+    variants: {
+      variant: {
+        default: "rounded-xl border border-border bg-white focus:ring-1 focus:ring-brand",
+        ghost: "rounded-none border-0 bg-transparent p-0 focus:ring-0",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
 
 const Input = forwardRef(
   (
@@ -14,6 +30,7 @@ const Input = forwardRef(
       name,
       placeholder,
       type = "text",
+      variant = "default",
       className,
       containerClassName,
       prefix,
@@ -57,7 +74,7 @@ const Input = forwardRef(
             aria-invalid={!!error}
             suppressHydrationWarning={true}
             className={cn(
-              "w-full rounded-xl border border-border bg-white text-base text-primary placeholder:text-tertiary transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-brand py-3 px-4",
+              inputVariants({ variant }),
               prefix ? "pl-11" : "",
               suffix ? "pr-14" : "",
               error && "border-red-500 focus:ring-red-500",

@@ -31,7 +31,7 @@ const linkButtonVariants = cva(
         default: "px-4 py-2 text-sm",
         md: "px-5 py-2.5 text-sm",
         lg: "px-5 py-2.5 xl:px-6 xl:py-3 text-base",
-        xl: "px-6 py-3.5 text-base",
+        xl: "px-6 py-3 text-base",
       },
       rounded: {
         default: "rounded-lg",

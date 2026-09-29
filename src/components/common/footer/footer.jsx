@@ -82,7 +82,7 @@ export default function Footer() {
                 priority
               />
             </Link>
-            <H3 className="mt-auto font-normal text-gray-100">
+            <H3 className="mt-8 lg:mt-auto font-normal text-gray-100">
               Buy and sell digital products
               <br />
               with confidence.
@@ -156,7 +156,7 @@ export default function Footer() {
         {/* Row 2: Follow Us/Tagline + Support, Company, Legal */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12">
           {/* Follow Us & Repeated Tagline */}
-          <div className="md:col-span-12 lg:col-span-5">
+          <div className="md:col-span-12 lg:col-span-5 h-full flex flex-col">
             <div className="flex items-center gap-6 mb-4 lg:mb-6">
               <H5 className="font-semibold text-white">
                 Follow Us
@@ -177,11 +177,11 @@ export default function Footer() {
               </div>
             </div>
 
-            <p className="mt-8 text-[20px] sm:text-[24px] font-normal leading-[160%] text-white max-w-sm">
+            <H3 className="mt-8 lg:mt-auto font-normal text-gray-100">
               Buy and sell digital products
               <br />
               with confidence.
-            </p>
+            </H3>
           </div>
 
           {/* Right Link Columns */}
@@ -248,14 +248,14 @@ export default function Footer() {
 
       {/* Bottom Sub-footer Bar (#0F1117) */}
       <div className="w-full bg-[#0F1117] py-6 border-t border-white/5">
-        <div className="site-container flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+        <div className="site-container flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-5 text-center lg:text-left">
           {/* Copyright */}
-          <p className="text-[14px] sm:text-[16px] font-normal text-gray-400 leading-[150%] order-3 md:order-1">
+          <p className="text-[14px] sm:text-[16px] font-normal text-gray-400 leading-[150%] order-3 lg:order-1">
             © 2026 ACCZORA. All rights reserved.
           </p>
 
           {/* Quick Legal Links */}
-          <div className="flex items-center justify-center gap-6 text-[14px] sm:text-[16px] font-normal text-gray-400 order-1 md:order-2">
+          <div className="flex items-center justify-center gap-6 text-[14px] sm:text-[16px] font-normal text-gray-400 order-1 lg:order-2">
             <Link
               href="/terms"
               className="hover:text-white transition-colors duration-200"
@@ -277,7 +277,7 @@ export default function Footer() {
           </div>
 
           {/* Language & Currency */}
-          <div className="flex items-center justify-center gap-4 text-[14px] sm:text-[16px] font-normal text-gray-400 order-2 md:order-3">
+          <div className="flex items-center justify-center gap-4 text-[14px] sm:text-[16px] font-normal text-gray-400 order-2 lg:order-3">
             <span className="hover:text-white transition-colors duration-200 cursor-pointer">
               English
             </span>

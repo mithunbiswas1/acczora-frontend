@@ -24,7 +24,7 @@ export default function SellerCTA() {
           </div>
 
           {/* Action Button */}
-          <div className="mt-8 md:mt-10 xl:mt-15 mt flex justify-center">
+          <div className="mt-8 md:mt-10 xl:mt-15 mt flex lg:justify-center">
             <LinkButton className="w-full sm:w-auto bg-white text-brand" href="/become-a-seller" variant="solid" size="lg">
               <span>Become a Seller</span>
               <ButtonArrowIcon size={18} />

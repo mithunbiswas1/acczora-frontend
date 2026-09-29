@@ -18,10 +18,10 @@ const benefits = [
 export default function Banner() {
   return (
     <section className="w-full">
-      <div className="site-container py-8 lg:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-20 lg:gap-0">
+      <div className="site-container py-4 md:py-8 lg:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-10 md:gap-16 lg:gap-0">
           {/* ================= LEFT CONTENT ================= */}
-          <div className="">
+          <div className="order-2 md:order-1">
             <div className="max-w-143.75">
               {/* Small Label */}
               <span className="px-3 py-1 text-xs font-semibold text-gray-900 bg-gray-100 rounded-full uppercase">
@@ -35,7 +35,7 @@ export default function Banner() {
               </H1>
 
               {/* Description */}
-              <P className="mt-6">
+              <P className="mt-5 lg:mt-6">
                 Buy and sell digital accounts &amp; assets from trusted sellers
                 with secure payments, buyer protection, and fast delivery.
               </P>
@@ -66,7 +66,7 @@ export default function Banner() {
               />
 
               {/* CTA Buttons */}
-              <div className="mt-12.5 flex items-center gap-3.5">
+              <div className="mt-8 lg:mt-12.5 flex flex-col md:flex-row items-start md:items-center gap-3.5">
                 <LinkButton href="#" variant="solid" size="lg">
                   Explore Marketplace
                 </LinkButton>
@@ -78,7 +78,7 @@ export default function Banner() {
             </div>
 
             {/* Benefits */}
-            <div className="mt-12.5 inline-flex flex-wrap xl:flex-nowrap xl:whitespace-nowrap gap-x-7 gap-y-4">
+            <div className="mt-8 lg:mt-12.5 inline-flex flex-wrap xl:flex-nowrap xl:whitespace-nowrap gap-x-5 lg:gap-x-7 gap-y-4">
               {benefits.map((benefit) => (
                 <div key={benefit} className="flex items-center gap-2">
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success text-white">
@@ -94,14 +94,15 @@ export default function Banner() {
           </div>
 
           {/* ================= RIGHT VISUAL ================= */}
-          <div className="flex h-full justify-center lg:justify-end">
+          <div className="order-1 md:order-2 flex items-center justify-center lg:justify-end">
             <video
               src="/video.mp4"
               autoPlay
               muted
               loop
               playsInline
-              className="h-full w-full max-w-100 object-cover rounded-[20px]"
+              style={{ aspectRatio: "56 / 67" }}
+              className="w-full h-auto aspect-[56/67] max-w-100 object-cover rounded-[20px]"
             />
           </div>
         </div>

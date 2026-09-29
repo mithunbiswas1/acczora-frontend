@@ -122,7 +122,7 @@ const sellers = [
 
 export default function TopSellers() {
   return (
-    <section className="w-full py-10 lg:py-16">
+    <section className="w-full py-8 md:py-15 lg:py-20 xl:py-24">
       <div className="site-container">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 md:mb-10 lg:mb-15">

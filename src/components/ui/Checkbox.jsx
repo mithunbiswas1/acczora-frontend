@@ -9,10 +9,11 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
 const checkboxVariants = cva(
-  "peer size-5 shrink-0 rounded-md border-2 border-border_gray ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-none shadow-sm hover:border-primary/50 cursor-pointer",
+  "peer flex items-center justify-center size-5 shrink-0 rounded-md border-2 border-border_gray ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-none shadow-sm hover:border-primary/50 cursor-pointer",
   {
     variants: {
       variant: {
+        brand: "data-[state=checked]:bg-brand data-[state=checked]:text-white",
         primary:
           "data-[state=checked]:bg-primary data-[state=checked]:text-foreground_primary",
         success:
@@ -25,7 +26,7 @@ const checkboxVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "primary",
+      variant: "brand",
     },
   },
 );

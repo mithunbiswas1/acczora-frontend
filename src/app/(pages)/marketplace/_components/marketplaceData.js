@@ -3,6 +3,7 @@
 export const products = [
   {
     id: 1,
+    slug: "facebook-account",
     category: "Social Media",
     subcategory: "Facebook",
     title: "Facebook Account",
@@ -25,6 +26,7 @@ export const products = [
   },
   {
     id: 2,
+    slug: "gmail-account",
     category: "Email",
     subcategory: "Gmail",
     title: "Gmail Account",
@@ -40,35 +42,38 @@ export const products = [
       name: "DigitalHub",
       verified: true,
       avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&q=80",
-      rating: "4.5",
-      reviews: "350+ Reviews",
-    },
-  },
-  {
-    id: 3,
-    category: "Gaming",
-    subcategory: "Steam",
-    title: "Steam Gaming Account",
-    specs: ["Level 80", "25+ Games"],
-    inStock: true,
-    instantDelivery: true,
-    isBestSeller: true,
-    price: 14.99,
-    image: "/logo_image/steam.png",
-    gradient: "linear-gradient(to top right, #00ADEE20 0%, #00ADEE00 100%)",
-    bg: "#00ADEE0F",
-    seller: {
-      name: "GameVault",
-      verified: true,
-      avatar:
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&auto=format&fit=crop&q=80",
       rating: "4.5",
       reviews: "350+ Reviews",
     },
   },
   {
+    id: 3,
+    slug: "steam-gaming-account-level-50",
+    category: "Gaming",
+    subcategory: "Steam",
+    title: "Premium Steam Gaming Account – Level 50",
+    specs: ["Level 80", "25+ Games"],
+    inStock: true,
+    instantDelivery: true,
+    isBestSeller: true,
+    price: 24.99,
+    image: "/logo_image/steam.png",
+    gradient: "linear-gradient(to top right, #00ADEE20 0%, #00ADEE00 100%)",
+    bg: "#00ADEE0F",
+    seller: {
+      name: "Harry Potter",
+      verified: true,
+      avatar:
+        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
+      rating: "4.8",
+      reviews: "127 Reviews",
+      role: "Top Developer",
+    },
+  },
+  {
     id: 4,
+    slug: "claude-account",
     category: "AI Tools",
     subcategory: "Claude",
     title: "Claude Account",
@@ -91,6 +96,7 @@ export const products = [
   },
   {
     id: 5,
+    slug: "amazon-account",
     category: "Business",
     subcategory: "Amazon",
     title: "Amazon Account",
@@ -113,6 +119,7 @@ export const products = [
   },
   {
     id: 6,
+    slug: "visual-studio-account",
     category: "Developer",
     subcategory: "Visual Studio",
     title: "Visual Studio Account",
@@ -135,6 +142,7 @@ export const products = [
   },
   {
     id: 7,
+    slug: "netflix-premium",
     category: "Streaming",
     subcategory: "Netflix",
     title: "Netflix Premium",
@@ -157,6 +165,7 @@ export const products = [
   },
   {
     id: 8,
+    slug: "software-license",
     category: "Software & Apps",
     subcategory: "Android",
     title: "Software License",
@@ -195,18 +204,18 @@ const categoryNames = [
 ];
 
 const subcategoryNames = {
-  "Social Media": ["Facebook", "Instagram", "Twitter / X", "TikTok", "LinkedIn", "Snapchat"],
-  Email: ["Gmail", "Outlook", "Yahoo Mail", "ProtonMail"],
-  Gaming: ["Steam", "PlayStation", "Xbox", "Epic Games", "Riot Games"],
-  Streaming: ["Netflix", "Disney+", "Amazon Prime Video", "Spotify", "YouTube Premium"],
-  "Software & Apps": ["Windows", "Android", "Adobe", "Microsoft Office", "Antivirus"],
-  "AI Tools": ["ChatGPT", "Claude", "Midjourney", "GitHub Copilot"],
-  Business: ["Amazon", "Shopify", "LinkedIn Business", "CRM Tools"],
-  Developer: ["GitHub", "Visual Studio", "JetBrains", "Domain & Hosting"],
-  "E-commerce": ["Shopify", "Amazon", "eBay", "Etsy"],
-  "Crypto & Web3": ["Binance", "Coinbase", "MetaMask", "NFT Marketplaces"],
-  Education: ["Coursera", "Udemy", "LinkedIn Learning", "Skillshare"],
-  Productivity: ["Notion", "Slack", "Trello", "Google Workspace"],
+  "Social Media": ["Facebook", "Instagram"],
+  Email: ["Gmail", "Outlook"],
+  Gaming: ["Steam", "PlayStation"],
+  Streaming: ["Netflix", "Disney+"],
+  "Software & Apps": ["Windows", "Android"],
+  "AI Tools": ["ChatGPT", "Claude"],
+  Business: ["Amazon", "Shopify"],
+  Developer: ["GitHub", "Visual Studio"],
+  "E-commerce": ["Shopify", "eBay"],
+  "Crypto & Web3": ["Binance", "Coinbase"],
+  Education: ["Coursera", "Udemy"],
+  Productivity: ["Notion", "Slack"],
 };
 
 export const categories = categoryNames.map((name, index) => ({

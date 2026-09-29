@@ -1,7 +1,23 @@
 // src/components/ui/Select.jsx
 
 import { forwardRef, useState } from "react";
+import { cva } from "class-variance-authority";
 import { cn } from "@/lib/cn";
+
+const selectVariants = cva(
+  "py-2 2xl:py-2.5 w-full px-4 pr-10 appearance-none focus:outline-none focus:ring-1 cursor-pointer",
+  {
+    variants: {
+      variant: {
+        default: "rounded-md border border-border_gray bg-gray-50 focus:ring-primary",
+        outline: "rounded-lg border border-border bg-white text-sm text-primary focus:ring-brand",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
 
 const Select = forwardRef(
   (
@@ -14,6 +30,7 @@ const Select = forwardRef(
       placeholder,
       options = [],
       suggested = [],
+      variant = "default",
       className,
       suffix,
       error,
@@ -72,7 +89,7 @@ const Select = forwardRef(
             onFocus={() => setIsOpen(true)}
             onBlur={() => setIsOpen(false)}
             className={cn(
-              "py-2 2xl:py-2.5 w-full rounded-md border border-border_gray bg-gray-50 px-4 pr-10 appearance-none focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer",
+              selectVariants({ variant }),
               error && "border-red-500 focus:ring-red-500",
               disabled && "opacity-50 cursor-not-allowed",
               className,

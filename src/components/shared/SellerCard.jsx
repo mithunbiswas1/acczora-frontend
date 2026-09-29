@@ -48,7 +48,7 @@ export default function SellerCard({ seller, href }) {
       </div>
 
       {/* Card Body */}
-      <div className="px-5 pb-5 pt-0 flex flex-col items-center">
+      <div className="px-4 pb-4 pt-0 flex flex-col items-center">
         {/* Overlapping Avatar */}
         <div className="relative size-14 -mt-7 rounded-full border-1 border-white overflow-hidden shadow-sm shrink-0 bg-white z-10">
           <Image

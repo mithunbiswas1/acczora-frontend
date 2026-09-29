@@ -68,8 +68,8 @@ const LoginForm = () => {
     } catch (err) {
       toast.error(
         err?.data?.message ||
-          err?.data?.errors?.[0] ||
-          "Login failed. Please try again.",
+        err?.data?.errors?.[0] ||
+        "Login failed. Please try again.",
       );
     }
   };
@@ -118,9 +118,8 @@ const LoginForm = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="Enter Phone Number"
-                  className={`flex-1 bg-zinc-800 border ${
-                    errors.phone ? "border-red-500" : "border-zinc-700"
-                  } rounded-r-md px-4 py-2.5 text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
+                  className={`flex-1 bg-zinc-800 border ${errors.phone ? "border-red-500" : "border-zinc-700"
+                    } rounded-r-md px-4 py-2.5 text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
                 />
               </div>
               {errors.phone && (
@@ -141,9 +140,8 @@ const LoginForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter Password"
-                  className={`w-full bg-zinc-800 border ${
-                    errors.password ? "border-red-500" : "border-zinc-700"
-                  } rounded-md px-4 py-2.5 text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all pr-10`}
+                  className={`w-full bg-zinc-800 border ${errors.password ? "border-red-500" : "border-zinc-700"
+                    } rounded-md px-4 py-2.5 text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all pr-10`}
                 />
                 <span
                   className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
@@ -164,9 +162,8 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full bg-primary hover:bg-amber-600 text-black font-semibold py-3 rounded-lg transition-all duration-300 ${
-                isLoading ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+              className={`w-full bg-primary hover:bg-amber-600 text-black font-semibold py-3 rounded-lg transition-all duration-300 ${isLoading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
             >
               {isLoading ? "Logging in..." : "Login →"}
             </button>

@@ -43,6 +43,15 @@ const buttonVariants = cva(
           "bg-transparent text-gray_500 border border-gray_500 cursor-not-allowed",
         outline_icon:
           "backdrop-blur-xs text-info border border-info! hover:bg-foreground_primary hover:text-gray-50",
+        brand:
+          "bg-brand hover:bg-brand-hover text-white border border-transparent",
+        pill_selected: "bg-white border border-brand text-brand",
+        pill_unselected:
+          "bg-gray-50 border border-transparent text-secondary hover:border-border",
+        outline_selected: "bg-brand/5 border border-brand text-brand",
+        outline_muted:
+          "bg-transparent border border-border text-secondary hover:border-primary",
+        outline_border: "bg-transparent border border-border text-primary",
       },
       size: {
         default: "px-4 xl:px-5 py-2 xl:py-2.5 text-sm",
@@ -51,6 +60,9 @@ const buttonVariants = cva(
         md: "px-5 py-2.5 leading-[146%] font-bold text-base",
         sm: "px-2 lg:px-4 py-1 lg:py-2 leading-[130%] font-medium text-sm",
         xs: "px-3 py-1 leading-[100%] font-medium text-xs",
+        icon: "size-10 p-0",
+        chip: "px-4 py-2 text-sm font-medium",
+        footer: "py-2.5 text-sm font-semibold",
       },
       rounded: {
         default: "rounded-full",
@@ -58,6 +70,7 @@ const buttonVariants = cva(
         md: "rounded-md",
         sm: "rounded-sm",
         xs: "rounded-xs",
+        xl: "rounded-xl",
       },
     },
     defaultVariants: {

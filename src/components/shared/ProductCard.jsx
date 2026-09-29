@@ -11,13 +11,14 @@ import { H5, H6, Caption } from "@/components/ui/Typography";
 
 export default function ProductCard({ product, href }) {
   const [isLiked, setIsLiked] = useState(false);
+  const targetHref = href || (product?.slug ? `/${product.slug}` : product?.id ? `/${product.id}` : null);
 
   return (
     <div className="group relative bg-card rounded-[12px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">
       {/* Optional Card Link */}
-      {href && (
+      {targetHref && (
         <Link
-          href={href}
+          href={targetHref}
           className="absolute inset-0 z-0"
           aria-label={product.title}
         />
