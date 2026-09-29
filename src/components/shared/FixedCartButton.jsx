@@ -3,7 +3,7 @@
 "use client";
 
 import { useSelector, useDispatch } from "react-redux";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { toggleCart } from "@/redux/slice/CartDrawerSlice";
 
 export default function FixedCartButton() {
@@ -19,17 +19,17 @@ export default function FixedCartButton() {
   return (
     <button
       onClick={() => dispatch(toggleCart())}
-      className="fixed bottom-8 right-8 z-50 bg-amber-500 hover:bg-amber-600 text-black rounded-full p-4 shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-110 group"
+      className="fixed bottom-7 right-7 z-40 bg-[#6558ff] hover:bg-[#5446f5] active:bg-[#4839ee] text-white rounded-full p-3.5 sm:p-4 shadow-xl shadow-[#6558ff]/30 transition-all duration-200 hover:scale-105 group"
       aria-label="Open cart"
     >
       <div className="relative">
-        <ShoppingCart
-          size={28}
-          className="group-hover:rotate-6 transition-transform"
+        <ShoppingBag
+          size={24}
+          className="group-hover:scale-105 transition-transform"
         />
 
-        {/* Badge */}
-        <span className="absolute -top-2 -right-2 bg-black text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-amber-500">
+        {/* Count Badge */}
+        <span className="absolute -top-2.5 -right-2.5 bg-gray-900 text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
           {totalItems > 99 ? "99+" : totalItems}
         </span>
       </div>

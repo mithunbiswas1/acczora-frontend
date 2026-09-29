@@ -28,7 +28,7 @@ export default function AuthCard({
 
       {/* Main Card */}
       <div
-        className={`w-full max-w-[430px] sm:max-w-[452px] bg-white rounded-2xl border border-gray- shadow-[0_2px_16px_rgba(0,0,0,0.03)] p-6 sm:p-9 ${className}`}
+        className={`w-full max-w-[430px] sm:max-w-[452px] bg-white rounded-2xl border border-border shadow-[0_2px_16px_rgba(0,0,0,0.03)] p-6 sm:p-9 ${className}`}
       >
         {headerExtra}
 

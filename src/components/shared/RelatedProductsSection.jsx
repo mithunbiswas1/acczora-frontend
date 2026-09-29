@@ -26,7 +26,7 @@ export default function RelatedProductsSection({
           <ProductCard
             key={product.id}
             product={product}
-            href={`/${product.slug || product.id}`}
+            href={`/product/${product.slug || product.id}`}
           />
         ))}
       </div>

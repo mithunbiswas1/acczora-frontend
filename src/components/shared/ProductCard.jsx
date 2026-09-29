@@ -19,14 +19,14 @@ export default function ProductCard({ product, href }) {
   const dispatch = useDispatch();
   const [isLiked, setIsLiked] = useState(false);
 
-  // Link to /[slug] everywhere by default
+  // Link to /product/[slug] everywhere by default
   const targetHref =
     product?.slug
-      ? `/${product.slug}`
+      ? `/product/${product.slug}`
       : href
       ? href
       : product?.id
-      ? `/${product.id}`
+      ? `/product/${product.id}`
       : null;
 
   const handleBuyNow = (e) => {
