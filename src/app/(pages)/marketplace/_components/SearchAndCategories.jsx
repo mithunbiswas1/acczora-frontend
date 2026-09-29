@@ -4,7 +4,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Search, ArrowRight, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { ButtonArrowIcon, SearchIcon } from "@/icons";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { cn } from "@/lib/cn";
@@ -97,39 +98,45 @@ export default function SearchAndCategories({
   return (
     <div className="space-y-4">
       {/* Search bar */}
-      <div className="flex items-center gap-3 w-full rounded-xl border border-[#E5E7EB] bg-white pl-4 pr-1.5 py-1.5 focus-within:border-[#6658FF] transition-colors shadow-xs">
-        <Search className="size-5 text-[#374151] shrink-0" />
-
-        <input
-          type="text"
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Netflix Ultra Pro Max 2099"
-          className="flex-1 min-w-0 py-1.5 text-sm text-[#1F2937] placeholder:text-[#9CA3AF] bg-transparent outline-none"
-        />
-
-        <button
-          type="button"
-          aria-label="Search"
-          className="size-9 bg-[#0B1528] hover:bg-black text-white rounded-lg flex items-center justify-center shrink-0 transition-colors cursor-pointer"
-        >
-          <ArrowRight className="size-4 text-white" />
-        </button>
-      </div>
+      <Input
+        type="text"
+        value={query}
+        onChange={(event) => onQueryChange(event.target.value)}
+        placeholder="Search for products, accounts, games & more..."
+        containerClassName="w-full"
+        className="h-[50px] xl:h-[60px] rounded-[14px] border-border bg-white text-base leading-[1.2] text-tertiary placeholder:text-tertiary pl-14 pr-16 focus:ring-1 focus:ring-brand focus:border-brand shadow-none"
+        prefix={
+          <div
+            aria-label="Search"
+            className="size-11 flex items-center justify-center -ml-1"
+          >
+            <SearchIcon size={22} color="#2B2F38" />
+          </div>
+        }
+        suffix={
+          <button
+            type="button"
+            aria-label="Search"
+            className="px-4 py-2.5 text-white bg-primary-2 rounded-lg transition hover:opacity-95 cursor-pointer"
+          >
+            <ButtonArrowIcon size={18} />
+          </button>
+        }
+      />
 
       {/* Category pills */}
       <div
         ref={containerRef}
-        className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex items-center gap-[10px] overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <button
           type="button"
           onClick={onClearCategories}
           className={cn(
-            "shrink-0 inline-flex items-center rounded-lg text-xs font-medium border px-3.5 py-1.5 transition-colors cursor-pointer select-none",
+            "shrink-0 inline-flex items-center justify-center min-w-[134px] h-[39px] p-[10px] gap-[10px] rounded-[8px] text-xs md:text-sm font-medium border transition-colors cursor-pointer select-none",
             activeCategories.length === 0
               ? "bg-white border-[#6658FF] text-[#6658FF] shadow-xs"
-              : "bg-white border-[#E5E7EB] text-[#374151] hover:border-gray-400",
+              : "bg-[#F0F1F3] border-[#E5E7EB] text-[#2B2F38] hover:border-gray-400 hover:bg-[#e8e9ec]",
           )}
         >
           All Products
@@ -147,17 +154,15 @@ export default function SearchAndCategories({
                 if (el) pillRefs.current.set(category.id, el);
                 else pillRefs.current.delete(category.id);
               }}
+              onClick={() => onToggleCategory(category.name)}
               className={cn(
-                "shrink-0 inline-flex items-center gap-1.5 rounded-lg text-xs font-medium border px-3 py-1.5 transition-colors cursor-pointer select-none",
+                "shrink-0 inline-flex items-center justify-between min-w-[134px] h-[39px] p-[10px] gap-[10px] rounded-[8px] text-xs md:text-sm font-medium border transition-colors cursor-pointer select-none",
                 isActive
                   ? "bg-white border-[#6658FF] text-[#6658FF] shadow-xs"
-                  : "bg-white border-[#E5E7EB] text-[#374151] hover:border-gray-400",
+                  : "bg-[#F0F1F3] border-[#E5E7EB] text-[#2B2F38] hover:border-gray-400 hover:bg-[#e8e9ec]",
               )}
             >
-              <span
-                onClick={() => onToggleCategory(category.name)}
-                className="cursor-pointer"
-              >
+              <span className="truncate">
                 {category.name}
               </span>
 
@@ -172,11 +177,11 @@ export default function SearchAndCategories({
                   }
                 }}
                 aria-label={`${category.name} options`}
-                className="cursor-pointer text-[#9CA3AF] hover:text-gray-700"
+                className="cursor-pointer text-[#6B7280] hover:text-gray-900 shrink-0"
               >
                 <ChevronDown
                   className={cn(
-                    "size-3 transition-transform duration-200",
+                    "size-3.5 transition-transform duration-200",
                     isOpen && "rotate-180",
                   )}
                 />

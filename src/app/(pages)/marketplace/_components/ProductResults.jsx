@@ -26,49 +26,26 @@ export default function ProductResults({
   return (
     <div className="flex-1 min-w-0">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div className="flex flex-wrap items-center gap-4 flex-1">
-          {/* Filter toggle button matching Image 1 */}
-          <button
-            type="button"
-            onClick={onToggleFilters}
-            className={cn(
-              "w-44 px-3.5 py-2 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-between text-sm text-[#374151] hover:border-gray-400 transition-colors shadow-xs cursor-pointer select-none",
-              showFilters && "border-[#6658FF]/50 ring-1 ring-[#6658FF]/20",
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <span>Filter</span>
-              {activeFilterCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full bg-[#2563EB] text-white text-[10px] font-semibold leading-none">
-                  {String(activeFilterCount).padStart(2, "0")}
-                </span>
-              )}
-            </div>
-            <ChevronDown
-              className={cn(
-                "size-4 text-[#9CA3AF] transition-transform duration-200",
-                showFilters && "rotate-180",
-              )}
-            />
-          </button>
-
-          {/* Results summary / Not found message matching Image 1 */}
-          <p className="text-xs md:text-sm text-[#4B5563]">
+      <div className="mb-6 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between md:gap-4">
+        {/* Mobile: Count above. Desktop: Filter button + Count together */}
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+          {/* Results summary / Count */}
+          <div className="order-1 md:order-2 text-sm md:text-base font-semibold text-[#111827]">
             {isNoResults ? (
               hasQuery ? (
-                <>
+                <span className="text-xs md:text-sm font-normal text-[#4B5563]">
                   No products found for{" "}
                   <span className="text-[#E11D48] italic font-medium">
                     &ldquo;{query}&rdquo;
                   </span>
-                  . Try a different keyword or browse our categories.
-                </>
+                </span>
               ) : (
-                "No products found. Try removing some filters or adjusting your selection."
+                <span className="text-xs md:text-sm font-normal text-[#4B5563]">
+                  No products found.
+                </span>
               )
             ) : hasQuery ? (
-              <>
+              <span className="text-xs md:text-sm font-normal text-[#4B5563]">
                 Search results for{" "}
                 <span className="font-semibold text-[#6658FF]">
                   &ldquo;{query}&rdquo;
@@ -76,15 +53,46 @@ export default function ProductResults({
                 <span className="text-[#9CA3AF]">
                   &bull; {results.length} product{results.length === 1 ? "" : "s"} found
                 </span>
-              </>
+              </span>
             ) : (
-              <span className="text-[#9CA3AF]">{totalCount} Products</span>
+              <span>24,680 Products</span>
             )}
-          </p>
+          </div>
+
+          {/* Action Row on Mobile (Filter on left, Sort on right) / Desktop Filter Button */}
+          <div className="order-2 md:order-1 flex items-center justify-between md:justify-start gap-3">
+            <button
+              type="button"
+              onClick={onToggleFilters}
+              className={cn(
+                "h-[40px] px-4 rounded-lg border border-[#E5E7EB] bg-white flex items-center justify-between gap-3 text-sm text-[#374151] hover:border-gray-400 transition-colors shadow-xs cursor-pointer select-none",
+                showFilters && "border-[#6658FF]/50 ring-1 ring-[#6658FF]/20",
+              )}
+            >
+              <span>Filter</span>
+              <ChevronDown
+                className={cn(
+                  "size-4 text-[#9CA3AF] transition-transform duration-200",
+                  showFilters && "rotate-180",
+                )}
+              />
+            </button>
+
+            {/* Mobile-only Sort dropdown placed beside Filter */}
+            <div className="md:hidden shrink-0">
+              <Select
+                variant="outline"
+                value={sort}
+                onChange={(event) => onSortChange(event.target.value)}
+                options={sortOptions}
+                suffix={<ChevronDown className="size-4 text-secondary" />}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Sort dropdown */}
-        <div className="shrink-0">
+        {/* Desktop-only Sort dropdown on right */}
+        <div className="hidden md:block shrink-0">
           <Select
             variant="outline"
             value={sort}
@@ -97,7 +105,7 @@ export default function ProductResults({
 
       {/* Results or Empty State */}
       {results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5 xl:gap-6">
           {results.map((product) => (
             <ProductCard
               key={product.id}

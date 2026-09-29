@@ -3,8 +3,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Star, ChevronRight, ChevronDown, CircleX, Check } from "lucide-react";
+import { Star, ChevronDown, CircleX, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CheckSquareIcon, SidebarChevronRightIcon } from "@/icons";
 import SubcategoryList from "./SubcategoryList";
 
 const CATEGORY_COUNTS = {
@@ -29,6 +30,24 @@ function toggleValue(list, value) {
 }
 
 function FilterCheckbox({ checked, onChange, id }) {
+  if (!checked) {
+    return (
+      <button
+        type="button"
+        id={id}
+        role="checkbox"
+        aria-checked={checked}
+        onClick={(e) => {
+          e.stopPropagation();
+          onChange();
+        }}
+        className="size-4 shrink-0 flex items-center justify-center cursor-pointer text-[#4B5563]"
+      >
+        <CheckSquareIcon size={16} />
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -39,19 +58,9 @@ function FilterCheckbox({ checked, onChange, id }) {
         e.stopPropagation();
         onChange();
       }}
-      className={cn(
-        "size-[18px] shrink-0 rounded-[4px] flex items-center justify-center transition-all cursor-pointer",
-        checked
-          ? "bg-[#2563EB] border border-[#2563EB] text-white"
-          : "bg-white border border-[#9CA3AF] text-[#9CA3AF] hover:border-gray-500",
-      )}
+      className="size-4 shrink-0 rounded-[4px] bg-[#2563EB] flex items-center justify-center transition-all cursor-pointer"
     >
-      <Check
-        className={cn(
-          "size-3",
-          checked ? "stroke-[2.8] text-white" : "stroke-[2] text-[#9CA3AF]",
-        )}
-      />
+      <Check className="size-3 stroke-[2.8] text-white" />
     </button>
   );
 }
@@ -111,45 +120,53 @@ function CategoryRow({
 }) {
   const hasSubcategories = category.subcategories?.length > 0;
   const count = CATEGORY_COUNTS[category.name] ?? category.count ?? 0;
-  const isSocialMedia = category.name === "Social Media";
 
   return (
     <div>
       <div
         onClick={onChange}
         className={cn(
-          "flex items-center justify-between gap-2.5 py-1.5 px-2.5 rounded-xl transition-all cursor-pointer group",
-          isSocialMedia
-            ? "border border-gray-200/90 bg-white"
-            : "border border-transparent hover:border-gray-200/70 hover:bg-gray-50/50",
+          "w-full max-w-[214px] h-[34px] p-2 gap-[10px] rounded-[8px] flex items-center justify-between transition-all cursor-pointer group select-none",
+          checked
+            ? "border border-[#E5E7EB] bg-white shadow-xs"
+            : "border border-transparent hover:border-[#E5E7EB] hover:bg-gray-50/50",
         )}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-[10px] min-w-0">
           <FilterCheckbox
             id={`category-${category.id}`}
             checked={checked}
             onChange={onChange}
           />
-          <span className="text-[13px] text-[#374151] group-hover:text-black font-normal truncate select-none">
+          <span className="font-medium text-[12px] leading-[120%] text-[#4B5563] group-hover:text-black truncate">
             {category.name}
           </span>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-[#9CA3AF] font-normal">{count}</span>
+          <span className="font-medium text-[12px] leading-[120%] text-[#9CA3AF]">
+            {count}
+          </span>
 
-          <ChevronRight
+          <button
+            type="button"
             onClick={(e) => {
               if (hasSubcategories) {
                 e.stopPropagation();
                 onToggleExpand();
               }
             }}
-            className={cn(
-              "size-3.5 text-[#9CA3AF] transition-transform duration-200 group-hover:text-gray-600",
-              isExpanded && "rotate-90",
-            )}
-          />
+            aria-label={`${category.name} subcategories`}
+            className="p-0 text-[#4B5563] hover:text-black transition-colors cursor-pointer"
+          >
+            <SidebarChevronRightIcon
+              size={16}
+              className={cn(
+                "transition-transform duration-200",
+                isExpanded && "rotate-90",
+              )}
+            />
+          </button>
         </div>
       </div>
 
@@ -223,9 +240,9 @@ export default function FilterSidebar({
     activeLength > 0 ? String(activeLength).padStart(2, "0") : "03";
 
   const filterContent = (
-    <div className="divide-y divide-[#F0F2F5]">
+    <div className="divide-y divide-[#E5E7EB]">
       {/* 1. Categories Section */}
-      <div className="pb-3.5">
+      <div className="px-[13px] py-3.5">
         <SectionHeader
           title="Categories"
           count={getSectionCount(activeCategories.length)}
@@ -255,7 +272,7 @@ export default function FilterSidebar({
       </div>
 
       {/* 2. Price Section */}
-      <div className="py-3.5">
+      <div className="px-[13px] py-3.5">
         <SectionHeader
           title="Price"
           count={getSectionCount(activePriceRanges.length)}
@@ -302,7 +319,7 @@ export default function FilterSidebar({
       </div>
 
       {/* 3. Rating Section */}
-      <div className="py-3.5">
+      <div className="px-[13px] py-3.5">
         <SectionHeader
           title="Rating"
           count={getSectionCount(activeRatings.length)}
@@ -331,7 +348,7 @@ export default function FilterSidebar({
       </div>
 
       {/* 4. Seller Section */}
-      <div className="py-3.5">
+      <div className="px-[13px] py-3.5">
         <SectionHeader
           title="Seller"
           count={getSectionCount(activeSellers.length)}
@@ -355,7 +372,7 @@ export default function FilterSidebar({
       </div>
 
       {/* 5. Delivery Section */}
-      <div className="py-3.5">
+      <div className="px-[13px] py-3.5">
         <SectionHeader
           title="Delivery"
           count={getSectionCount(activeDelivery.length)}
@@ -379,7 +396,7 @@ export default function FilterSidebar({
       </div>
 
       {/* 6. Availability Section */}
-      <div className="pt-3.5">
+      <div className="px-[13px] py-3.5">
         <SectionHeader
           title="Availability"
           count={getSectionCount(activeAvailability.length)}
@@ -407,9 +424,9 @@ export default function FilterSidebar({
   return (
     <>
       {/* Desktop: inline sidebar */}
-      <aside className="hidden lg:block w-72 shrink-0 bg-white border border-[#E5E7EB] rounded-2xl p-4 shadow-xs self-start">
+      <aside className="hidden lg:block w-[240px] shrink-0 bg-white border border-[#E5E7EB] rounded-[8px] shadow-xs self-start overflow-hidden">
         {/* Top Header */}
-        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#F0F2F5]">
+        <div className="flex items-center justify-between px-[13px] py-3.5 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -432,7 +449,7 @@ export default function FilterSidebar({
             onClick={onClearAll}
             className="text-[11px] font-medium text-[#EF4444] bg-[#FEF2F2] hover:bg-[#FEE2E2] px-2.5 py-0.5 rounded-full cursor-pointer transition-colors"
           >
-            Celar all
+            Clear all
           </button>
         </div>
 
@@ -441,10 +458,13 @@ export default function FilterSidebar({
 
       {/* Mobile: full-screen overlay drawer */}
       <div className="lg:hidden fixed inset-0 z-50">
-        <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+        <div
+          className="absolute inset-0 bg-black/40 animate-in fade-in duration-200"
+          onClick={onClose}
+        />
 
-        <div className="absolute inset-y-0 right-0 flex h-full w-full max-w-xs flex-col bg-white shadow-2xl">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#F0F2F5] shrink-0">
+        <div className="absolute inset-y-0 left-0 flex h-full w-full max-w-xs flex-col bg-white shadow-2xl animate-in slide-in-from-left duration-300">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E7EB] shrink-0">
             <div className="flex items-center gap-2">
               <span className="text-[15px] font-bold text-[#1F2937]">Filter</span>
               <span className="px-2 py-0.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold leading-none">
@@ -460,7 +480,7 @@ export default function FilterSidebar({
                 onClick={onClearAll}
                 className="text-[11px] font-medium text-[#EF4444] bg-[#FEF2F2] hover:bg-[#FEE2E2] px-2.5 py-0.5 rounded-full cursor-pointer transition-colors"
               >
-                Celar all
+                Clear all
               </button>
               <button
                 type="button"
@@ -473,7 +493,7 @@ export default function FilterSidebar({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 py-4">{filterContent}</div>
+          <div className="flex-1 overflow-y-auto">{filterContent}</div>
 
           <div className="flex items-center gap-3 px-5 py-4 border-t border-[#F0F2F5] shrink-0">
             <button

@@ -2,11 +2,13 @@
 
 "use client";
 
+import { useState } from "react";
 import { Check } from "lucide-react";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { H1, P } from "@/components/ui/Typography";
 import Input from "@/components/ui/Input";
 import { ButtonArrowIcon, SearchIcon } from "@/icons";
+import SearchModal from "@/components/common/navbar/SearchModal";
 
 const benefits = [
   "Verified Sellers",
@@ -16,8 +18,26 @@ const benefits = [
 ];
 
 export default function Banner() {
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+
   return (
     <section className="w-full">
+      {/* MOBILE SEARCH BAR (Home Hero only) */}
+      <div className="site-container pt-3.5 pb-1 md:hidden flex justify-center">
+        <button
+          type="button"
+          onClick={() => setSearchModalOpen(true)}
+          className="flex h-[40px] w-full items-center justify-between gap-3 rounded-[10px] border border-[#E5E7EB] bg-white px-4 py-[10px] text-left transition-colors hover:border-brand cursor-pointer shadow-2xs"
+          aria-label="Search products"
+        >
+          <div className="flex items-center gap-3">
+            <SearchIcon size={20} color="#2B2F38" />
+            <span className="text-sm font-medium text-primary">Search products</span>
+          </div>
+          <ButtonArrowIcon size={14} className="text-primary" />
+        </button>
+      </div>
+
       <div className="site-container py-4 md:py-8 lg:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-10 md:gap-16 lg:gap-0">
           {/* ================= LEFT CONTENT ================= */}
@@ -107,6 +127,12 @@ export default function Banner() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Search Modal */}
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+      />
     </section>
   );
 }

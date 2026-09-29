@@ -16,7 +16,7 @@ export default function SearchBar() {
       {/* lg and up: full search pill */}
       <div
         onClick={() => setIsOpen(true)}
-        className="hidden 2xl:flex items-center gap-3 px-4 py-2.5 mr-3.5 rounded-[10px] border border-border transition-all cursor-pointer hover:border-brand focus-within:border-brand"
+        className="hidden xl:flex items-center gap-3 px-4 py-2.5 mr-3.5 rounded-[10px] border border-border transition-all cursor-pointer hover:border-brand focus-within:border-brand"
       >
         <Search className="size-5 text-primary" />
         <input
@@ -32,7 +32,7 @@ export default function SearchBar() {
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Search"
-        className={cn(iconButtonVariants(), "hidden md:flex 2xl:hidden")}
+        className={cn(iconButtonVariants(), "hidden md:flex xl:hidden")}
       >
         <Search className="h-full w-full" strokeWidth={1.6} />
       </button>

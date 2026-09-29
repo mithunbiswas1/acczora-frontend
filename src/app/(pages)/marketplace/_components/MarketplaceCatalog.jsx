@@ -25,7 +25,7 @@ function toggleValue(list, value) {
 
 export default function MarketplaceCatalog() {
   const [query, setQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [sort, setSort] = useState("popular");
 
   // Default: All Products is selected (empty activeCategories)
@@ -38,13 +38,6 @@ export default function MarketplaceCatalog() {
   const [activeSellers, setActiveSellers] = useState([]);
   const [activeDelivery, setActiveDelivery] = useState([]);
   const [activeAvailability, setActiveAvailability] = useState([]);
-
-  // Mobile check: close overlay by default on small viewports
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      setShowFilters(false);
-    }
-  }, []);
 
   const debouncedQuery = useDebounce(query, 300);
 
@@ -250,7 +243,7 @@ export default function MarketplaceCatalog() {
           onToggleSubcategory={handleToggleSubcategory}
         />
 
-        <div className="flex flex-col lg:flex-row gap-8 mt-8">
+        <div className="flex flex-col lg:flex-row gap-6 mt-8">
           {showFilters && (
             <FilterSidebar
               categories={categories}

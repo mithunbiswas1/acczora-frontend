@@ -173,22 +173,6 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* MOBILE SEARCH BAR */}
-      <div className="site-container pt-3.5 pb-1 md:hidden flex justify-center">
-        <button
-          type="button"
-          onClick={() => setSearchModalOpen(true)}
-          className="flex h-[40px] w-full items-center justify-between gap-3 rounded-[10px] border border-[#E5E7EB] bg-white px-4 py-[10px] text-left transition-colors hover:border-brand cursor-pointer shadow-2xs"
-          aria-label="Search products"
-        >
-          <div className="flex items-center gap-3">
-            <SearchIcon size={20} className="text-primary" />
-            <span className="text-sm font-medium text-primary">Search products</span>
-          </div>
-          <ButtonArrowIcon size={14} className="text-primary" />
-        </button>
-      </div>
-
       {/* MOBILE DRAWER */}
       <div
         className={`fixed inset-0 z-50 transition-opacity duration-300 lg:hidden ${mobileMenuOpen
@@ -248,7 +232,7 @@ export default function Navbar() {
               aria-label="Search products"
             >
               <div className="flex items-center gap-3">
-                <SearchIcon size={20} className="text-primary" />
+                <SearchIcon size={20} color="#2B2F38" />
                 <span className="text-sm font-medium text-primary">Search products</span>
               </div>
               <ButtonArrowIcon size={14} className="text-primary" />
