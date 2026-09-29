@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { Search, ChevronDown } from "lucide-react";
 import ProductCard from "@/components/shared/ProductCard";
 import SubcategoryList from "../../marketplace/_components/SubcategoryList";
-import { categories as marketplaceCategories } from "../../marketplace/_components/marketplaceData";
+import { categories as marketplaceCategories } from "@/data";
 import { cn } from "@/lib/cn";
 
 export default function StoreProductsSection({

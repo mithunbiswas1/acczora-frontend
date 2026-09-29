@@ -35,20 +35,23 @@ export default function ProductBuyBox({ product }) {
   const {
     id,
     title,
-    categoryTags = "Gaming, Commercial & info",
+    category,
+    subcategory,
+    categoryTags,
     rating = 4.8,
     reviewsCount = 127,
     stockLeft = 24,
     price = 24.99,
-    seller = {
-      name: "Harry Potter",
-      avatar: "/seller_avater.jpg",
-      verified: true,
-      role: "Top Client",
-    },
+    seller = {},
     deliveryTime = "Instant delivery",
     deliverySubtext = "Delivered just minute after order",
   } = product || {};
+
+  const resolvedCategoryTags =
+    categoryTags ||
+    (category && subcategory
+      ? `${category} / ${subcategory}`
+      : category || subcategory || "");
 
   const handleDecrease = () => {
     if (quantity > 1) {
@@ -85,7 +88,7 @@ export default function ProductBuyBox({ product }) {
       quantity: quantity,
       image: product?.gallery?.[0]?.image || "/product_demo_image.jpg",
       sellerName: seller?.name || "NovaStore",
-      category: product?.category || "Gaming",
+      category: product?.category || "",
     };
 
     dispatch(singleAddToCartsList(cartItem));
@@ -98,11 +101,13 @@ export default function ProductBuyBox({ product }) {
     <div className="flex flex-col justify-between h-full py-0.5">
       <div>
         {/* Category Pill Tag */}
-        <div>
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#F3F4F6] text-xs font-medium text-[#4B5563] mb-3">
-            {categoryTags || "Gaming / Game Accounts"}
-          </span>
-        </div>
+        {resolvedCategoryTags && (
+          <div>
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#F3F4F6] text-xs font-medium text-[#4B5563] mb-3">
+              {resolvedCategoryTags}
+            </span>
+          </div>
+        )}
 
         {/* Product Title */}
         <h1 className="text-2xl sm:text-3xl font-bold text-primary leading-tight mb-2.5">

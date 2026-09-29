@@ -9,8 +9,7 @@ import SellerShowcaseCard from "./_components/SellerShowcaseCard";
 import ProductReviews from "@/components/shared/ProductReviews";
 import RelatedProductsSection from "@/components/shared/RelatedProductsSection";
 
-import { getProductBySlug } from "./_data/productDetailData";
-import { products } from "../marketplace/_components/marketplaceData";
+import { getProductBySlug, products } from "@/data";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -33,15 +32,23 @@ export default async function ProductDetailPage({ params }) {
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Marketplace", href: "/marketplace" },
-    {
-      label: product.category || "Gaming",
-      href: `/marketplace?category=${encodeURIComponent(product.category || "Gaming")}`,
-    },
-    {
-      label: product.subcategory || "Game Accounts",
-      href: `/marketplace?category=${encodeURIComponent(product.category || "Gaming")}&subcategory=${encodeURIComponent(product.subcategory || "Game Accounts")}`,
-    },
-    { label: "Product", href: "#", current: true },
+    ...(product.category
+      ? [
+          {
+            label: product.category,
+            href: `/marketplace?category=${encodeURIComponent(product.category)}`,
+          },
+        ]
+      : []),
+    ...(product.subcategory
+      ? [
+          {
+            label: product.subcategory,
+            href: `/marketplace?category=${encodeURIComponent(product.category)}&subcategory=${encodeURIComponent(product.subcategory)}`,
+          },
+        ]
+      : []),
+    { label: product.title, href: "#", current: true },
   ];
 
   // Prepare related products to pass down

@@ -6,7 +6,7 @@ import { H2, P } from "@/components/ui/Typography";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { ButtonArrowIcon } from "@/icons";
 import ProductCard from "@/components/shared/ProductCard";
-import { products } from "@/app/(pages)/marketplace/_components/marketplaceData";
+import { products } from "@/data";
 
 export default function FeaturedProducts() {
   return (

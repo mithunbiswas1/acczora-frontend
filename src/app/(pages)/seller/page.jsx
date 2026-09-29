@@ -2,7 +2,7 @@
 
 import Breadcrumb from "@/components/shared/Breadcrumb";
 import SellersListContainer from "./_components/SellersListContainer";
-import { sellersData } from "./_data/sellersData";
+import { sellersData } from "@/data";
 
 export const metadata = {
   title: "Sellers | ACCZORA",

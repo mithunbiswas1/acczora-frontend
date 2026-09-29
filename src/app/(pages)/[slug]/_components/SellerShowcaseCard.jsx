@@ -6,7 +6,7 @@ import { StarIcon, StarSimpleCheckIcon, BasketDollarIcon, BadgeCheckIcon } from 
 
 export default function SellerShowcaseCard({ seller }) {
   const {
-    name = "Candidate Name",
+    name = seller?.name || "NovaStore",
     avatar = "/seller_avater.jpg",
     verified = true,
     rating = 4.9,
@@ -78,7 +78,7 @@ export default function SellerShowcaseCard({ seller }) {
         {/* Right: Action Button */}
         <div className="w-full sm:w-auto shrink-0">
           <Link
-            href={`/store/${seller?.slug || "nova-store"}`}
+            href={`/seller/${seller?.slug || "nova-store"}`}
             className="w-full sm:w-auto px-6 py-2.5 rounded-[8px] bg-brand hover:bg-brand-hover text-white text-xs sm:text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <span>Visit Store</span>

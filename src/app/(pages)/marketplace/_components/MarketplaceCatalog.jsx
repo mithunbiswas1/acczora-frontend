@@ -15,7 +15,7 @@ import {
   sellerOptions,
   deliveryOptions,
   availabilityOptions,
-} from "./marketplaceData";
+} from "@/data";
 
 function toggleValue(list, value) {
   return list.includes(value)

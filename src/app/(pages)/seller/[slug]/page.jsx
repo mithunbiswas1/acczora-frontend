@@ -4,8 +4,7 @@ import Breadcrumb from "@/components/shared/Breadcrumb";
 import StoreHeaderCard from "../_components/StoreHeaderCard";
 import StoreProductsSection from "../_components/StoreProductsSection";
 import StoreReviewsSection from "../_components/StoreReviewsSection";
-import { storeData } from "../_data/storeData";
-import { products } from "../../marketplace/_components/marketplaceData";
+import { storeData, products } from "@/data";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
