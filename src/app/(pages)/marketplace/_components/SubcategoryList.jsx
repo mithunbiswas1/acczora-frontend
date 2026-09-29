@@ -34,14 +34,14 @@ export default function SubcategoryList({
                 className={cn(
                   "size-[18px] shrink-0 rounded-[4px] flex items-center justify-center transition-all cursor-pointer",
                   checked
-                    ? "bg-[#2563EB] border border-[#2563EB] text-white"
-                    : "bg-white border border-[#9CA3AF] text-[#9CA3AF] hover:border-gray-500",
+                    ? "bg-info border border-info text-white"
+                    : "bg-white border border-muted text-muted hover:border-gray-500",
                 )}
               >
                 <Check
                   className={cn(
                     "size-3",
-                    checked ? "stroke-[2.8] text-white" : "stroke-[2] text-[#9CA3AF]",
+                    checked ? "stroke-[2.8] text-white" : "stroke-[2] text-muted",
                   )}
                 />
               </button>
@@ -50,7 +50,7 @@ export default function SubcategoryList({
               </span>
             </div>
 
-            <span className="text-xs text-[#9CA3AF]">{sub.count}</span>
+            <span className="text-xs text-muted">{sub.count}</span>
           </div>
         );
       })}

@@ -146,7 +146,7 @@ export default function TopSellers() {
             <SellerCard
               key={seller.id}
               seller={seller}
-              href={`/sellers/${seller.id}`}
+              href={`/seller/${seller.slug || "nova-store"}`}
             />
           ))}
         </div>

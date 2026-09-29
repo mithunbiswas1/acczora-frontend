@@ -2,63 +2,74 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Check, ShoppingBag, ArrowRight } from "lucide-react";
-import { H3 } from "@/components/ui/Typography";
+import { StarIcon, StarSimpleCheckIcon, BasketDollarIcon, BadgeCheckIcon } from "@/icons";
 
 export default function SellerShowcaseCard({ seller }) {
   const {
     name = "Candidate Name",
-    avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80",
+    avatar = "/seller_avater.jpg",
     verified = true,
     rating = 4.9,
-    sales = "1.5k",
-    productsCount = "50+",
+    sales = "1,284",
+    positiveRating = "98%",
   } = seller || {};
 
   return (
-    <section className="mt-12 sm:mt-14">
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
+    <section id="seller" className="mt-14 sm:mt-16 scroll-mt-24">
+      <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-[#E5E7EB] p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xs">
         {/* Left: Avatar & Info */}
-        <div className="flex items-center gap-4 sm:gap-5 w-full sm:w-auto">
+        <div className="flex items-center gap-4 sm:gap-5">
           {/* Avatar */}
-          <div className="relative size-14 sm:size-16 rounded-full overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+          <Link
+            href={`/seller/${seller?.slug || "nova-store"}`}
+            className="relative size-16 sm:size-18 rounded-full overflow-hidden bg-gray-100 shrink-0 border border-gray-200 hover:opacity-85 transition-opacity"
+            title={`Visit ${name}`}
+          >
             <Image
               src={avatar}
               alt={name}
               fill
-              sizes="64px"
+              sizes="72px"
               className="object-cover"
             />
-          </div>
+          </Link>
 
           {/* Details */}
           <div>
-            <div className="flex items-center gap-2">
-              <H3 className="text-base sm:text-lg font-bold text-[#1F2937]">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Link
+                href={`/seller/${seller?.slug || "nova-store"}`}
+                className="text-lg sm:text-xl font-bold text-primary hover:text-brand transition-colors"
+              >
                 {name}
-              </H3>
+              </Link>
               {verified && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB] text-[11px] font-semibold">
-                  <Check className="size-2.5 stroke-[3.5]" />
+                <Link
+                  href="/seller"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF6FF] hover:bg-[#DBEAFE] text-info text-xs font-semibold transition-colors"
+                  title="Browse verified sellers"
+                >
+                  <BadgeCheckIcon size={14} color="#2563EB" />
                   <span>Verified Seller</span>
-                </span>
+                </Link>
               )}
             </div>
 
-            {/* Metrics */}
-            <div className="flex items-center gap-3 mt-1.5 text-xs text-[#9CA3AF]">
-              <div className="flex items-center gap-1 font-semibold text-[#1F2937]">
-                <Star className="size-3.5 fill-[#F59E0B] text-[#F59E0B]" />
-                <span>{rating}</span>
+            {/* Metrics Row */}
+            <div className="flex items-center gap-3 mt-2 text-xs font-medium">
+              <div className="flex items-center gap-1.5 text-warning">
+                <StarIcon size={14} color="#F59E0B" />
+                <span className="font-semibold text-warning">{rating}</span>
               </div>
-              <span className="text-gray-300">•</span>
-              <div className="flex items-center gap-1 text-[#6B7280]">
-                <span>{sales} Sales</span>
+              <div className="h-3 w-px bg-border" />
+              <div className="flex items-center gap-1.5 text-success">
+                <BasketDollarIcon size={14} color="#16A34A" />
+                <span className="font-semibold text-success">{sales}</span>
               </div>
-              <span className="text-gray-300">•</span>
-              <div className="flex items-center gap-1 text-[#6B7280]">
-                <ShoppingBag className="size-3 text-[#9CA3AF]" />
-                <span>{productsCount} Products</span>
+              <div className="h-3 w-px bg-border" />
+              <div className="flex items-center gap-1.5 text-info">
+                <StarSimpleCheckIcon size={14} color="#2563EB" />
+                <span className="font-semibold text-info">{positiveRating}</span>
               </div>
             </div>
           </div>
@@ -67,11 +78,11 @@ export default function SellerShowcaseCard({ seller }) {
         {/* Right: Action Button */}
         <div className="w-full sm:w-auto shrink-0">
           <Link
-            href="/marketplace"
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#6658FF] hover:bg-[#5546F0] text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
+            href={`/store/${seller?.slug || "nova-store"}`}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-[8px] bg-brand hover:bg-brand-hover text-white text-xs sm:text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <span>Visit Store</span>
-            <ArrowRight className="size-4" />
+            <span className="text-sm">→</span>
           </Link>
         </div>
       </div>

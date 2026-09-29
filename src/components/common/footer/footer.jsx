@@ -65,7 +65,7 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#111827] text-white">
+    <footer className="w-full bg-primary text-white">
       {/* Upper Main Footer */}
       <div className="site-container py-14 lg:py-18">
         {/* Row 1: Brand/Tagline + Marketplace, For Buyers, For Sellers */}

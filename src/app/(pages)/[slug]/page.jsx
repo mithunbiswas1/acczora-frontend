@@ -1,14 +1,16 @@
 // src/app/(pages)/[slug]/page.jsx
 
-import Breadcrumb from "./_components/Breadcrumb";
+import Breadcrumb from "@/components/shared/Breadcrumb";
 import ProductGallery from "./_components/ProductGallery";
 import ProductBuyBox from "./_components/ProductBuyBox";
 import ProductAbout from "./_components/ProductAbout";
 import ConfidenceBanner from "./_components/ConfidenceBanner";
 import SellerShowcaseCard from "./_components/SellerShowcaseCard";
-import ProductReviews from "./_components/ProductReviews";
-import RelatedProductsSection from "./_components/RelatedProductsSection";
+import ProductReviews from "@/components/shared/ProductReviews";
+import RelatedProductsSection from "@/components/shared/RelatedProductsSection";
+
 import { getProductBySlug } from "./_data/productDetailData";
+import { products } from "../marketplace/_components/marketplaceData";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -30,14 +32,22 @@ export default async function ProductDetailPage({ params }) {
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
-    { label: "Market Place", href: "/marketplace" },
+    { label: "Marketplace", href: "/marketplace" },
     {
       label: product.category || "Gaming",
       href: `/marketplace?category=${encodeURIComponent(product.category || "Gaming")}`,
     },
-    { label: "Commercial & info", href: "#" },
-    { label: product.subcategory || "Details", href: "#", current: true },
+    {
+      label: product.subcategory || "Game Accounts",
+      href: `/marketplace?category=${encodeURIComponent(product.category || "Gaming")}&subcategory=${encodeURIComponent(product.subcategory || "Game Accounts")}`,
+    },
+    { label: "Product", href: "#", current: true },
   ];
+
+  // Prepare related products to pass down
+  const relatedProducts = products
+    .filter((p) => p.id !== product.id)
+    .slice(0, 4);
 
   return (
     <main className="min-h-screen bg-white pb-16 sm:pb-24">
@@ -67,7 +77,11 @@ export default async function ProductDetailPage({ params }) {
         <ProductReviews reviewsData={product.reviewsData} />
 
         {/* Related Products Grid & View All CTA */}
-        <RelatedProductsSection currentProductId={product.id} />
+        <RelatedProductsSection
+          products={relatedProducts}
+          title="Related Products"
+          viewAllHref="/marketplace"
+        />
       </div>
     </main>
   );

@@ -31,7 +31,7 @@ const typographyVariants = cva("transition-colors", {
       tertiary: "text-tertiary",
       brand: "text-brand",
       "brand-hover": "text-brand-hover",
-      muted: "text-tertiary",
+      muted: "text-muted",
       white: "text-white",
       danger: "text-error",
       error: "text-error",

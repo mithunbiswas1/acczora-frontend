@@ -4,8 +4,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Star, Check } from "lucide-react";
-import { ButtonArrowIcon } from "@/icons";
+import { Star } from "lucide-react";
+import { ButtonArrowIcon, BadgeCheckIcon } from "@/icons";
 import { H5 } from "@/components/ui/Typography";
 import { LinkButton } from "@/components/ui/LinkButton";
 
@@ -15,25 +15,28 @@ const defaultLogos = [
   "/logo_image/apple.png",
 ];
 
-export default function SellerCard({ seller, href }) {
+export default function SellerCard({ seller = {}, href }) {
   const {
     name = "NovaStore",
-    verified = true,
-    avatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    banner = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
+    slug = "nova-store",
+    verified = seller?.verified !== undefined ? seller.verified : (seller?.isVerified !== undefined ? seller.isVerified : true),
+    avatar = seller?.avatar || "/seller_avater.jpg",
+    banner = seller?.banner || seller?.cover || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
     sales = "2.4K+ Sales",
     productsCount = "126 Products",
     rating = "4.5",
-    reviews = "350+ Reviews",
-    extraCount = "120+",
-    logos = defaultLogos,
+    reviews = seller?.reviews || seller?.reviewsCount || "350+ Reviews",
+    extraCount = seller?.extraCount || seller?.extraPlatformsCount || "120+",
+    logos = seller?.logos || (seller?.platforms ? seller.platforms.map((p) => (typeof p === "string" ? p : p.icon)) : defaultLogos),
   } = seller;
+
+  const targetHref = href || `/seller/${slug || "nova-store"}`;
 
   return (
     <div className="group relative bg-card rounded-[12px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">
       {/* Whole-card link */}
-      {href && (
-        <Link href={href} className="absolute inset-0 z-0" aria-label={name} />
+      {targetHref && (
+        <Link href={targetHref} className="absolute inset-0 z-0" aria-label={name} />
       )}
 
       {/* Top Banner Image */}
@@ -66,8 +69,8 @@ export default function SellerCard({ seller, href }) {
             {name}
           </H5>
           {verified && (
-            <span className="size-4 rounded-full bg-info text-white flex items-center justify-center shrink-0">
-              <Check className="size-2.5" strokeWidth={3.5} />
+            <span className="inline-flex items-center text-info shrink-0" title="Verified Seller">
+              <BadgeCheckIcon size={16} color="#2563EB" />
             </span>
           )}
         </div>
@@ -108,7 +111,7 @@ export default function SellerCard({ seller, href }) {
 
         {/* Action Button (Transitions on card hover) */}
         <LinkButton
-          href={href}
+          href={targetHref}
           variant="outline-group"
           rounded="xl"
           className="relative z-10 mt-4 w-full py-2.5"

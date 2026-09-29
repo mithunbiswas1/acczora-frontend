@@ -82,11 +82,11 @@ function SectionHeader({ title, count = "03", totalCount, isOpen, onToggle }) {
 
       <div className="flex items-center gap-1.5">
         {totalCount !== undefined && (
-          <span className="text-xs text-[#9CA3AF] font-normal">{totalCount}</span>
+          <span className="text-xs text-muted font-normal">{totalCount}</span>
         )}
         <ChevronDown
           className={cn(
-            "size-3.5 text-[#9CA3AF] transition-transform duration-200 group-hover:text-gray-600",
+            "size-3.5 text-muted transition-transform duration-200 group-hover:text-gray-600",
             !isOpen && "-rotate-90",
           )}
         />
@@ -144,7 +144,7 @@ function CategoryRow({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="font-medium text-[12px] leading-[120%] text-[#9CA3AF]">
+          <span className="font-medium text-[12px] leading-[120%] text-muted">
             {count}
           </span>
 
@@ -293,7 +293,7 @@ export default function FilterSidebar({
             ))}
 
             <div className="pt-2">
-              <span className="text-xs text-[#9CA3AF] font-normal block mb-2">
+              <span className="text-xs text-muted font-normal block mb-2">
                 Custom Price
               </span>
               <div className="flex items-center gap-2.5">
@@ -302,15 +302,15 @@ export default function FilterSidebar({
                   placeholder="00"
                   value={customMin}
                   onChange={(e) => onCustomMinChange?.(e.target.value)}
-                  className="w-full h-8 bg-[#F1F3F6] rounded-md text-center text-xs text-[#374151] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full h-8 bg-[#F1F3F6] rounded-md text-center text-xs text-[#374151] placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-info"
                 />
-                <span className="text-xs text-[#9CA3AF] shrink-0">to</span>
+                <span className="text-xs text-muted shrink-0">to</span>
                 <input
                   type="text"
                   placeholder="00"
                   value={customMax}
                   onChange={(e) => onCustomMaxChange?.(e.target.value)}
-                  className="w-full h-8 bg-[#F1F3F6] rounded-md text-center text-xs text-[#374151] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full h-8 bg-[#F1F3F6] rounded-md text-center text-xs text-[#374151] placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-info"
                 />
               </div>
             </div>
@@ -431,7 +431,7 @@ export default function FilterSidebar({
             <button
               type="button"
               onClick={onClose}
-              className="text-[#4B5563] hover:text-[#111827] transition-colors cursor-pointer"
+              className="text-secondary hover:text-primary transition-colors cursor-pointer"
               title="Close filter"
             >
               <CircleX className="size-5 stroke-[1.6]" />

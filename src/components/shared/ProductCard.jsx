@@ -5,21 +5,57 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Star, Check } from "lucide-react";
-import { HeartIcon, HeartFillIcon } from "@/icons";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
+import { HeartIcon, HeartFillIcon, StarIcon, BadgeCheckIcon } from "@/icons";
 import { H5, H6, Caption } from "@/components/ui/Typography";
+import {
+  singleAddToCartsList,
+  setBuyNowItem,
+  openCart,
+} from "@/redux/slice/CartDrawerSlice";
 
 export default function ProductCard({ product, href }) {
+  const dispatch = useDispatch();
   const [isLiked, setIsLiked] = useState(false);
-  const targetHref = href || (product?.slug ? `/${product.slug}` : product?.id ? `/${product.id}` : null);
+
+  // Link to /[slug] everywhere by default
+  const targetHref =
+    product?.slug
+      ? `/${product.slug}`
+      : href
+      ? href
+      : product?.id
+      ? `/${product.id}`
+      : null;
+
+  const handleBuyNow = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const cartItem = {
+      productId: product?.id || 1,
+      productTitle: product?.title,
+      title: product?.title,
+      price: product?.price || 0,
+      quantity: 1,
+      image: product?.image || "/logo_image/steam.png",
+      sellerName: product?.seller?.name || "Verified Seller",
+      category: product?.category || "Digital Account",
+    };
+
+    dispatch(singleAddToCartsList(cartItem));
+    dispatch(setBuyNowItem(cartItem));
+    dispatch(openCart());
+    toast.success(`Added ${product?.title} to cart`);
+  };
 
   return (
     <div className="group relative bg-card rounded-[12px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">
-      {/* Optional Card Link */}
+      {/* Whole Card Link Overlay */}
       {targetHref && (
         <Link
           href={targetHref}
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 z-10"
           aria-label={product.title}
         />
       )}
@@ -58,15 +94,14 @@ export default function ProductCard({ product, href }) {
               e.stopPropagation();
               setIsLiked(!isLiked);
             }}
-            className="absolute top-[14px] right-[14px] z-10 p-1 rounded-full transition-colors cursor-pointer"
+            className="absolute top-[14px] right-[14px] z-20 p-1 rounded-full transition-colors cursor-pointer"
           >
             {isLiked ? (
               <HeartFillIcon size={20} color="#F43F5E" />
             ) : (
               <HeartIcon
                 size={20}
-                color="#111827"
-                className="opacity-70 hover:opacity-100 transition-opacity"
+                className="text-primary opacity-70 hover:opacity-100 transition-opacity"
               />
             )}
           </button>
@@ -121,17 +156,17 @@ export default function ProductCard({ product, href }) {
             />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <H6 className="truncate align-middle font-semibold text-[12px] text-[#111827]">
+                <H6 className="truncate align-middle font-semibold text-[12px] text-primary">
                   {product.seller.name}
                 </H6>
                 {product.seller.verified && (
-                  <span className="size-3.5 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0">
-                    <Check className="size-2.5" strokeWidth={3.5} />
+                  <span className="inline-flex text-[#2563EB] shrink-0" title="Verified Seller">
+                    <BadgeCheckIcon size={14} color="#2563EB" />
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-1.5 text-[11px] mt-0.5">
-                <Star className="size-3 fill-[#F59E0B] text-[#F59E0B] shrink-0" />
+                <StarIcon size={12} color="#F59E0B" className="shrink-0" />
                 <span className="font-semibold text-[#2563EB]">
                   {product.seller.rating}
                 </span>
@@ -150,10 +185,8 @@ export default function ProductCard({ product, href }) {
             </span>
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              className="relative z-10 px-5 py-2 bg-success hover:bg-success/90  text-white text-[12px] font-semibold leading-[130%] tracking-normal rounded-[10px] transition-colors shadow-2xs cursor-pointer"
+              onClick={handleBuyNow}
+              className="relative z-20 px-5 py-2 bg-success hover:bg-success/90 text-white text-[12px] font-semibold leading-[130%] tracking-normal rounded-[10px] transition-colors shadow-2xs cursor-pointer"
             >
               Buy Now
             </button>
