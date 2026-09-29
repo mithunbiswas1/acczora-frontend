@@ -6,11 +6,8 @@ import "./globals.css";
 
 import { Toaster } from "sonner";
 
-import Footer from "@/components/common/footer/footer.jsx";
 import ReduxProvider from "@/redux/redux-provider/ReduxProvider";
-import Navbar from "@/components/common/navbar/navbar.jsx";
 import CartDrawer from "@/components/shared/CartDrawer";
-import FixedCartButton from "@/components/shared/FixedCartButton";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -98,10 +95,7 @@ export default async function RootLayout({ children }) {
         className={`${plusJakartaSans.variable} bg-page-back`}
       >
         <ReduxProvider>
-          <Navbar />
           {children}
-          <Footer />
-          <FixedCartButton />
           <CartDrawer />
           <Toaster />
         </ReduxProvider>

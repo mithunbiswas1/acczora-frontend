@@ -1,10 +1,10 @@
-// src/app/(pages)/layout.jsx
+// src/app/(home)/layout.jsx
 
 import Navbar from "@/components/common/navbar/navbar.jsx";
 import Footer from "@/components/common/footer/footer.jsx";
 import FixedCartButton from "@/components/shared/FixedCartButton";
 
-export default function PagesLayout({ children }) {
+export default function HomeLayout({ children }) {
   return (
     <>
       <Navbar />
@@ -14,4 +14,3 @@ export default function PagesLayout({ children }) {
     </>
   );
 }
-
