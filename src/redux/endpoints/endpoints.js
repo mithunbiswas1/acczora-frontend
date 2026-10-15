@@ -14,10 +14,20 @@ export const endpoints = {
     createOrder: "create-order",
   },
 
-  //Product API
+  // Category API
+  category: {
+    categories: "categories",
+  },
+
+  // Subcategory API
+  subcategory: {
+    subcategories: "subcategories",
+  },
+
+  // Product API
   product: {
-    product: "product",
-    search: "search",
+    product: "products",
+    seller: "products/seller",
   },
 
   //Product Review

@@ -3,16 +3,30 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* Disable dark mode completely */
+@custom-variant dark (&:is(.never-dark *));
 
 :root {
+  color-scheme: light;
   --radius: 0.625rem;
+  --color-border: #e5e7eb;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, #e5e7eb);
+  }
 }
 
 body {
   font-size: 16px;
   scroll-behavior: smooth;
   font-family: "Plus Jakarta Sans", sans-serif;
+  color-scheme: light;
 }
 
 button {
@@ -54,6 +68,8 @@ button {
   --color-warning: #f59e0b;
   --color-info: #2563eb;
   --color-error: #dc2626;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
 
   --color-base-black: #121212;
   --color-page-back: #f8fafc;

@@ -13,6 +13,7 @@ const typographyVariants = cva("transition-colors", {
       h4: "text-[18px] sm:text-[20px] font-semibold text-primary leading-[120%]",
       h5: "text-base font-semibold text-primary leading-[120%]",
       h6: "text-xs font-semibold text-primary leading-[120%]",
+      title: "text-[14px] font-semibold text-primary leading-[150%] tracking-normal",
       p: "text-base font-medium text-secondary leading-[160%]",
       caption: "text-xs font-medium text-tertiary leading-[160%]",
       default: "",
@@ -50,16 +51,19 @@ function Typography({
   variant,
   weight,
   color,
+  as,
   asChild = false,
   ...props
 }) {
   const Comp = asChild
     ? Slot
-    : variant === "caption"
-      ? "p"
-      : variant === "p"
+    : as
+      ? as
+      : variant === "caption" || variant === "p"
         ? "p"
-        : variant || "p";
+        : variant === "title"
+          ? "h6"
+          : variant || "p";
 
   return (
     <Comp
@@ -70,13 +74,31 @@ function Typography({
 }
 
 // Helper components for direct tag usage
-const H1 = (props) => <Typography variant="h1" {...props} />;
-const H2 = (props) => <Typography variant="h2" {...props} />;
-const H3 = (props) => <Typography variant="h3" {...props} />;
-const H4 = (props) => <Typography variant="h4" {...props} />;
-const H5 = (props) => <Typography variant="h5" {...props} />;
-const H6 = (props) => <Typography variant="h6" {...props} />;
-const P = (props) => <Typography variant="p" {...props} />;
-const Caption = (props) => <Typography variant="caption" {...props} />;
+const H1 = ({ variant = "h1", ...props }) => (
+  <Typography as="h1" variant={variant} {...props} />
+);
+const H2 = ({ variant = "h2", ...props }) => (
+  <Typography as="h2" variant={variant} {...props} />
+);
+const H3 = ({ variant = "h3", ...props }) => (
+  <Typography as="h3" variant={variant} {...props} />
+);
+const H4 = ({ variant = "h4", ...props }) => (
+  <Typography as="h4" variant={variant} {...props} />
+);
+const H5 = ({ variant = "h5", ...props }) => (
+  <Typography as="h5" variant={variant} {...props} />
+);
+const H6 = ({ variant = "h6", ...props }) => (
+  <Typography as="h6" variant={variant} {...props} />
+);
+const Title = (props) => <Typography as="h6" variant="title" {...props} />;
+const P = ({ variant = "p", ...props }) => (
+  <Typography as="p" variant={variant} {...props} />
+);
+const Caption = ({ variant = "caption", ...props }) => (
+  <Typography as="p" variant={variant} {...props} />
+);
 
-export { Typography, typographyVariants, H1, H2, H3, H4, H5, H6, P, Caption };
+export { Typography, typographyVariants, H1, H2, H3, H4, H5, H6, Title, P, Caption };
+export default Typography;

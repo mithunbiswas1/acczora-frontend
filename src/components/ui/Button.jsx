@@ -44,7 +44,17 @@ const buttonVariants = cva(
         outline_icon:
           "backdrop-blur-xs text-info border border-info! hover:bg-foreground_primary hover:text-gray-50",
         brand:
-          "bg-brand hover:bg-brand-hover text-white border border-transparent",
+          "bg-brand hover:bg-brand-hover text-white border border-transparent shadow-xs",
+        outline:
+          "bg-white border border-border text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+        ghost:
+          "bg-transparent hover:bg-gray-100 text-gray-700 hover:text-gray-900 border border-transparent",
+        danger_subtle:
+          "bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100",
+        success_subtle:
+          "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100",
+        warning_subtle:
+          "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100",
         pill_selected: "bg-white border border-brand text-brand",
         pill_unselected:
           "bg-gray-50 border border-transparent text-secondary hover:border-border",
@@ -61,6 +71,9 @@ const buttonVariants = cva(
         sm: "px-2 lg:px-4 py-1 lg:py-2 leading-[130%] font-medium text-sm",
         xs: "px-3 py-1 leading-[100%] font-medium text-xs",
         icon: "size-10 p-0",
+        icon_sm: "size-8 p-0",
+        icon_xs: "size-7 p-0",
+        icon_lg: "size-11 p-0",
         chip: "px-4 py-2 text-sm font-medium",
         footer: "py-2.5 text-sm font-semibold",
       },
@@ -115,3 +128,4 @@ function Button({
 }
 
 export { Button, buttonVariants };
+export default Button;

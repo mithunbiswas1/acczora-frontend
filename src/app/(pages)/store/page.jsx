@@ -3,5 +3,5 @@
 import { redirect } from "next/navigation";
 
 export default function StoreIndexPage() {
-  redirect("/seller/nova-store");
+  redirect("/store/novastore");
 }

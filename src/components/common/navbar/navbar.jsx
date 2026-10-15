@@ -9,6 +9,7 @@ import { Heart, ShoppingBasket, ChevronDown, Menu, X } from "lucide-react";
 import { SearchIcon, ButtonArrowIcon } from "@/icons";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { IconButton } from "@/components/ui/IconButton";
+import { useSelector } from "react-redux";
 import SearchBar from "./SearchBar";
 import SearchModal from "./SearchModal";
 
@@ -29,6 +30,20 @@ export default function Navbar() {
   const [submenuOpen, setSubmenuOpen] = useState(false);
   const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getDashboardHref = (role) => {
+    const r = (role || "").toLowerCase();
+    if (r === "admin" || r === "super_admin") return "/admin/overview";
+    if (r === "seller") return "/seller/overview";
+    return "/buyer/overview";
+  };
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -179,13 +194,21 @@ export default function Navbar() {
             </div>
 
             <div className="hidden md:flex items-center gap-3.5">
-              <LinkButton href="/login" variant="outline">
-                Login
-              </LinkButton>
+              {mounted && isLoggedIn ? (
+                <LinkButton href={getDashboardHref(user?.role)} variant="solid">
+                  Dashboard
+                </LinkButton>
+              ) : (
+                <>
+                  <LinkButton href="/login" variant="outline">
+                    Login
+                  </LinkButton>
 
-              <LinkButton href="/signup" variant="solid">
-                Sign Up
-              </LinkButton>
+                  <LinkButton href="/registration" variant="solid">
+                    Sign Up
+                  </LinkButton>
+                </>
+              )}
             </div>
           </div>
         </nav>
@@ -377,22 +400,35 @@ export default function Navbar() {
 
           {/* Footer Auth Buttons */}
           <div className="mt-auto border-t border-gray-100 p-5 space-y-2.5 bg-gray-50/50">
-            <LinkButton
-              href="/login"
-              variant="outline"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full justify-center py-2.5"
-            >
-              Login
-            </LinkButton>
-            <LinkButton
-              href="/signup"
-              variant="solid"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full justify-center py-2.5"
-            >
-              Sign Up
-            </LinkButton>
+            {mounted && isLoggedIn ? (
+              <LinkButton
+                href={getDashboardHref(user?.role)}
+                variant="solid"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full justify-center py-2.5"
+              >
+                Go to Dashboard
+              </LinkButton>
+            ) : (
+              <>
+                <LinkButton
+                  href="/login"
+                  variant="outline"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full justify-center py-2.5"
+                >
+                  Login
+                </LinkButton>
+                <LinkButton
+                  href="/registration"
+                  variant="solid"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full justify-center py-2.5"
+                >
+                  Sign Up
+                </LinkButton>
+              </>
+            )}
           </div>
         </aside>
       </div>

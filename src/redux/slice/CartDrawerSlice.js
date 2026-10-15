@@ -53,14 +53,24 @@ const saveBuyNowToStorage = (item) => {
 const initialState = {
   open: false,
   carts: 0,
-  cartsList: loadCartFromStorage(),
-  buyNowItem: loadBuyNowFromStorage(),
+  cartsList: [],
+  buyNowItem: null,
+  isHydrated: false,
 };
 
 const CartDrawerSlice = createSlice({
   name: "cartDrawer",
   initialState,
   reducers: {
+    // Initialize cart from localStorage on client mount (avoids hydration mismatch)
+    initializeCart: (state) => {
+      const loaded = loadCartFromStorage();
+      const loadedBuyNow = loadBuyNowFromStorage();
+      state.cartsList = loaded;
+      state.carts = loaded.length;
+      state.buyNowItem = loadedBuyNow;
+      state.isHydrated = true;
+    },
     // Drawer controls
     openCart: (state) => {
       state.open = true;
@@ -83,11 +93,15 @@ const CartDrawerSlice = createSlice({
         productId,
         variationName,
         name,
+        title,
+        productTitle,
         image,
         price,
         variationPrice,
         variationOfferPrice,
       } = action.payload;
+
+      const itemName = name || title || productTitle || "Product";
 
       // Determine discounted price
       const discountedPrice = variationOfferPrice || null;
@@ -104,10 +118,13 @@ const CartDrawerSlice = createSlice({
         // Update price if it changed (in case of variation change)
         existingItem.price = actualPrice;
         existingItem.discountedPrice = discountedPrice;
+        if (!existingItem.name && itemName) {
+          existingItem.name = itemName;
+        }
       } else {
         state.cartsList.push({
           productId,
-          name,
+          name: itemName,
           image,
           price: actualPrice,
           discountedPrice: discountedPrice,
@@ -182,6 +199,7 @@ const CartDrawerSlice = createSlice({
 });
 
 export const {
+  initializeCart,
   openCart,
   closeCart,
   toggleCart,

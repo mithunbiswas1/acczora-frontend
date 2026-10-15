@@ -1,13 +1,16 @@
-// src/redux/apiSlice/apiSlice.js
+// src/redux/api-slice/api-slice.js
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "@/config/base-url";
+import { getCookie, deleteCookie } from "@/utils/cookie";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
+  credentials: "include", // Send & receive HTTP cookies automatically
   prepareHeaders: (headers) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("accessToken");
+      const token =
+        getCookie("accessToken") || localStorage.getItem("accessToken");
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -26,18 +29,32 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
     const data = result.error.data;
 
     if (status === 401 || data?.error === "Unauthenticated.") {
-      // remove token
       if (typeof window !== "undefined") {
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        deleteCookie("userRole");
         localStorage.removeItem("accessToken");
-      }
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("user");
 
-      // redirect
-      window.location.href = "/sign-in";
+        // only redirect if in protected pages
+        if (
+          window.location.pathname.startsWith("/admin") ||
+          window.location.pathname.startsWith("/seller") ||
+          window.location.pathname.startsWith("/buyer") ||
+          window.location.pathname.startsWith("/dashboard") ||
+          window.location.pathname.startsWith("/profile")
+        ) {
+          window.location.href = "/login";
+        }
+      }
     }
   }
 
   return result;
 };
+
 
 export const apiSlice = createApi({
   reducerPath: "api",
@@ -47,6 +64,7 @@ export const apiSlice = createApi({
     "Setting",
     "Slider",
     "Category",
+    "Subcategory",
     "Auth",
     "Profile",
     "Orders",

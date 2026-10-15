@@ -1,38 +1,84 @@
 // src/components/ui/Textarea.jsx
 
-import * as React from "react";
+import { forwardRef } from "react";
+import { cva } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
-const Textarea = React.forwardRef(
-  ({ className, label, id, error, disabled, ...props }, ref) => {
+const textareaVariants = cva(
+  "w-full rounded-xl border border-border bg-white text-gray-900 placeholder:text-gray-400 p-4 text-xs sm:text-sm focus:border-brand focus:ring-1 focus:ring-brand/20 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed resize-none",
+  {
+    variants: {
+      variant: {
+        default: "border-border bg-white focus:border-brand focus:ring-brand/20",
+        filled: "border-transparent bg-gray-50 focus:bg-white focus:border-brand",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+const Textarea = forwardRef(
+  (
+    {
+      className,
+      containerClassName,
+      label,
+      sublabel,
+      required = false,
+      id,
+      name,
+      rows = 3,
+      error,
+      helperText,
+      disabled,
+      variant = "default",
+      ...props
+    },
+    ref
+  ) => {
     return (
-      <div className="w-full">
+      <div className={cn("w-full space-y-1.5", containerClassName)}>
         {label && (
           <label
             htmlFor={id}
-            className="block text-sm font-medium mb-3 text-gray_deep"
+            className="block text-xs font-semibold text-gray-700"
           >
             {label}
+            {required && <span className="text-rose-500 ml-1">*</span>}
+            {sublabel && (
+              <span className="text-gray-400 font-normal ml-1">
+                ({sublabel})
+              </span>
+            )}
           </label>
         )}
         <textarea
           ref={ref}
           id={id}
+          name={name}
+          rows={rows}
+          required={required}
           disabled={disabled}
           aria-invalid={!!error}
           className={cn(
-            "flex w-full rounded-md border border-border_gray bg-gray-50 px-4 py-3 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 resize-none",
-            error && "border-red-500 focus:ring-red-500",
-            className,
+            textareaVariants({ variant }),
+            error && "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20",
+            className
           )}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+        {error && <p className="text-xs text-rose-500">{error}</p>}
+        {helperText && !error && (
+          <p className="text-[11px] text-gray-400">{helperText}</p>
+        )}
       </div>
     );
-  },
+  }
 );
 
 Textarea.displayName = "Textarea";
 
 export { Textarea };
+export default Textarea;

@@ -1,12 +1,12 @@
-// src/app/(auth)/registration/page.jsx
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { useRegistrationMutation } from "@/redux/api/authApi";
+import { setLogin } from "@/redux/slice/authSlice";
 import {
   AuthCard,
   AuthInput,
@@ -16,10 +16,13 @@ import {
 
 export default function RegistrationPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
 
+  const [role, setRole] = useState("buyer");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    shopName: "",
     password: "",
     confirmPassword: "",
   });
@@ -47,6 +50,10 @@ export default function RegistrationPage() {
       newErrors.email = "Email Address is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
+    }
+
+    if (role === "seller" && !formData.shopName.trim()) {
+      newErrors.shopName = "Store / Shop Name is required for sellers";
     }
 
     if (!formData.password) {
@@ -84,25 +91,33 @@ export default function RegistrationPage() {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
-        role: "customer",
+        role: role,
+        ...(role === "seller" && { shopName: formData.shopName }),
       };
 
       const res = await registration(payload).unwrap();
 
-      if (res?.success || res?.status === "success" || res?.data) {
-        toast.success("Account created successfully!");
-        router.push(
-          `/verify-email?email=${encodeURIComponent(formData.email)}`,
-        );
-      } else {
-        if (res?.errors && Array.isArray(res.errors)) {
-          res.errors.forEach((errorMessage) => toast.error(errorMessage));
-        } else {
-          toast.success("Registration initiated! Please verify your email.");
-          router.push(
-            `/verify-email?email=${encodeURIComponent(formData.email)}`,
+      if (res?.data) {
+        if (res.data.accessToken && res.data.user) {
+          dispatch(
+            setLogin({
+              user: res.data.user,
+              token: res.data.accessToken,
+              refreshToken: res.data.refreshToken,
+            })
           );
         }
+        toast.success(`Account created as ${role}! Welcome to ACCZORA.`);
+        if (role === "seller") {
+          router.push("/seller/overview");
+        } else if (role === "admin") {
+          router.push("/admin/overview");
+        } else {
+          router.push("/buyer/overview");
+        }
+      } else {
+        toast.success("Account created successfully! Please log in.");
+        router.push("/login");
       }
     } catch (err) {
       toast.error(
@@ -124,17 +139,62 @@ export default function RegistrationPage() {
       subtitle="Join ACCZORA and start exploring digital products."
     >
       <form onSubmit={handleSubmit} className="space-y-3.5">
+        {/* Account Role Selector */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+            I want to join as:
+          </label>
+          <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setRole("buyer")}
+              className={`py-2 text-xs font-semibold rounded-lg transition-all ${
+                role === "buyer"
+                  ? "bg-white dark:bg-gray-700 text-[#6558ff] shadow-sm"
+                  : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+              }`}
+            >
+              🛍️ Buyer / Customer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("seller")}
+              className={`py-2 text-xs font-semibold rounded-lg transition-all ${
+                role === "seller"
+                  ? "bg-white dark:bg-gray-700 text-[#6558ff] shadow-sm"
+                  : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+              }`}
+            >
+              🏪 Seller (Shop Owner)
+            </button>
+          </div>
+        </div>
+
         <AuthInput
           label="Full Name"
           id="fullName"
           name="fullName"
           type="text"
-          placeholder="skzllc@gmail.com"
+          placeholder="e.g. Alex Johnson"
           value={formData.fullName}
           onChange={handleChange}
           error={errors.fullName}
           autoComplete="name"
         />
+
+        {role === "seller" && (
+          <AuthInput
+            label="Store / Shop Name"
+            id="shopName"
+            name="shopName"
+            type="text"
+            placeholder="e.g. NovaStore"
+            value={formData.shopName}
+            onChange={handleChange}
+            error={errors.shopName}
+            autoComplete="organization"
+          />
+        )}
 
         <AuthInput
           label="Email Address"

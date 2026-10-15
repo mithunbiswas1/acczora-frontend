@@ -21,9 +21,9 @@ const buyerLinks = [
 ];
 
 const sellerLinks = [
-  { label: "Become a Seller", href: "/seller" },
+  { label: "Become a Seller", href: "/become-a-seller" },
   { label: "Seller Guide", href: "/seller-guide" },
-  { label: "Seller Dashboard", href: "/dashboard" },
+  { label: "Seller Dashboard", href: "/seller/overview" },
   { label: "Seller FAQ", href: "/seller-faq" },
 ];
 

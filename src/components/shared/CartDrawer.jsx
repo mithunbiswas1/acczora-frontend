@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,6 +27,11 @@ const getImageUrl = (path) => {
 export default function CartDrawer() {
   const dispatch = useDispatch();
   const { open, cartsList } = useSelector((state) => state.cartDrawer);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -109,8 +114,12 @@ export default function CartDrawer() {
               <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-none">
                 Your Cart
               </h2>
-              <span className="text-xs text-gray-400 mt-1 inline-block">
-                {totalQuantity} {totalQuantity === 1 ? "item" : "items"} selected
+              <span
+                suppressHydrationWarning
+                className="text-xs text-gray-400 mt-1 inline-block"
+              >
+                {mounted ? totalQuantity : 0}{" "}
+                {(mounted ? totalQuantity : 0) === 1 ? "item" : "items"} selected
               </span>
             </div>
           </div>
@@ -174,7 +183,7 @@ export default function CartDrawer() {
                   <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-border bg-gray-50 flex items-center justify-center p-1.5">
                     <Image
                       src={getImageUrl(item.image)}
-                      alt={item.name}
+                      alt={item.name || item.title || item.productTitle || "Cart item"}
                       fill
                       className="object-contain p-1"
                     />
@@ -185,7 +194,7 @@ export default function CartDrawer() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h4 className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
-                          {item.name}
+                          {item.name || item.title || item.productTitle || "Product"}
                         </h4>
                         {item.variationName && (
                           <span className="text-[11px] text-gray-400 block truncate mt-0.5">

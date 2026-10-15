@@ -87,7 +87,7 @@ export default function SellerApplicationSubmittedPage() {
       </div>
 
       {/* Button: Go to My Account */}
-      <Link href="/dashboard" className="block w-full">
+      <Link href="/seller/overview" className="block w-full">
         <AuthButton type="button">Go to My Account</AuthButton>
       </Link>
 

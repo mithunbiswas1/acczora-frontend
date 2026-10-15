@@ -2,6 +2,7 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { ShoppingBag } from "lucide-react";
 import { toggleCart } from "@/redux/slice/CartDrawerSlice";
@@ -9,12 +10,17 @@ import { toggleCart } from "@/redux/slice/CartDrawerSlice";
 export default function FixedCartButton() {
   const dispatch = useDispatch();
   const { cartsList } = useSelector((state) => state.cartDrawer);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Calculate total items in cart
   const totalItems = cartsList.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Don't show button if cart is empty
-  if (totalItems === 0) return null;
+  // Don't show button on server or if cart is empty
+  if (!mounted || totalItems === 0) return null;
 
   return (
     <button

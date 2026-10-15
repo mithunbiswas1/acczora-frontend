@@ -40,9 +40,7 @@ export default function LoginPage() {
   const validate = () => {
     const newErrors = {};
     if (!formData.email.trim()) {
-      newErrors.email = "Email Address is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = "Email, username, or phone is required";
     }
 
     if (!formData.password) {
@@ -58,8 +56,11 @@ export default function LoginPage() {
     if (!validate()) return;
 
     try {
+      const trimmedIdentifier = formData.email.trim();
       const payload = {
-        email: formData.email,
+        email: trimmedIdentifier,
+        userName: trimmedIdentifier,
+        phone: trimmedIdentifier,
         password: formData.password,
       };
 
@@ -70,17 +71,50 @@ export default function LoginPage() {
           setLogin({
             user: result.data.user,
             token: result.data.accessToken,
+            refreshToken: result.data.refreshToken,
           }),
         );
         toast.success(`Welcome back ${result.data.user?.fullName || "User"}!`);
-        router.push("/");
+
+        // Role-based routing to specific overview or validated redirect
+        const role = (result.data.user?.role || "").toLowerCase();
+        let targetPath = null;
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          const redirectParam = params.get("redirect");
+          if (redirectParam && redirectParam.startsWith("/")) {
+            if ((role === "admin" || role === "super_admin") && redirectParam.startsWith("/admin")) {
+              targetPath = redirectParam;
+            } else if (role === "seller" && redirectParam.startsWith("/seller")) {
+              targetPath = redirectParam;
+            } else if ((role === "buyer" || role === "customer") && redirectParam.startsWith("/buyer")) {
+              targetPath = redirectParam;
+            }
+          }
+        }
+
+        if (targetPath) {
+          router.push(targetPath);
+        } else if (role === "admin" || role === "super_admin") {
+          router.push("/admin/overview");
+        } else if (role === "seller") {
+          router.push("/seller/overview");
+        } else {
+          router.push("/buyer/overview");
+        }
       }
     } catch (err) {
-      toast.error(
-        err?.data?.message ||
+      console.error("Login Error:", err);
+      if (err?.status === "FETCH_ERROR" || err?.error?.includes?.("fetch")) {
+        toast.error("Cannot connect to backend server at http://localhost:8005. Please ensure backend is running!");
+      } else {
+        toast.error(
+          err?.data?.message ||
           err?.data?.errors?.[0] ||
+          err?.message ||
           "Login failed. Please check your credentials.",
-      );
+        );
+      }
     }
   };
 

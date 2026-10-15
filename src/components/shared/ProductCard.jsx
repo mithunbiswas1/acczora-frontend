@@ -34,6 +34,7 @@ export default function ProductCard({ product, href }) {
     e.stopPropagation();
     const cartItem = {
       productId: product?.id || 1,
+      name: product?.title || "Product",
       productTitle: product?.title,
       title: product?.title,
       price: product?.price || 0,

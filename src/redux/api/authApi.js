@@ -44,6 +44,53 @@ export const authApi = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+
+    // Get Current Authenticated Profile
+    getProfile: builder.query({
+      query: () => ({
+        url: "profile",
+        method: "GET",
+      }),
+      providesTags: ["Auth", "Profile"],
+    }),
+
+    // Logout API
+    logout: builder.mutation({
+      query: () => ({
+        url: "logout",
+        method: "POST",
+      }),
+      invalidatesTags: ["Auth", "Profile"],
+    }),
+
+    // Admin - List Users
+    getAdminUsers: builder.query({
+      query: (params) => ({
+        url: "admin/users",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Auth"],
+    }),
+
+    // Admin - Update User & Permissions
+    updateUserByAdmin: builder.mutation({
+      query: ({ userId, data }) => ({
+        url: `admin/update-user/${userId}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Auth", "Profile"],
+    }),
+
+    // Super Admin - Delete User
+    deleteUserByAdmin: builder.mutation({
+      query: (userId) => ({
+        url: `delete-user/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Auth"],
+    }),
   }),
 });
 
@@ -52,4 +99,10 @@ export const {
   useLoginMutation,
   useSendOtpMutation,
   useOtpVerifyLoginMutation,
+  useGetProfileQuery,
+  useLogoutMutation,
+  useGetAdminUsersQuery,
+  useUpdateUserByAdminMutation,
+  useDeleteUserByAdminMutation,
 } = authApi;
+

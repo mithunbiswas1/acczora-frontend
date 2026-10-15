@@ -2,189 +2,252 @@
 
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
-import Image from "next/image";
 import {
-  FaTachometerAlt,
-  FaShoppingBag,
-  FaUser,
-  FaBars,
-  FaTimes,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
+  X,
+  Users,
+  ShieldCheck,
+  Wallet,
+  ShoppingBag,
+  LifeBuoy,
+  ExternalLink,
+  FolderTree,
+} from "lucide-react";
+import {
+  GridSquareIcon,
+  CubesIcon,
+  CartFlatbedBoxesIcon,
+  MoneyWithdrawalIcon,
+  DashboardStarIcon,
+  GearIcon,
+  GridSquare2Icon,
+  MoneyBillCardIcon,
+} from "@/icons";
+import Button from "@/components/ui/Button";
 
-const Sidebar = ({ isMobileOpen, onMobileClose }) => {
+// Custom Categories Icon
+const CategoriesIcon = ({ className = "w-[18px] h-[18px]" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+    <path d="M2 10h20" />
+  </svg>
+);
+
+// 1. ADMIN NAVIGATION
+const adminNavItems = [
+  { name: "Overview", href: "/admin/overview", icon: GridSquareIcon },
+  { name: "Categories", href: "/admin/categories", icon: CategoriesIcon },
+  { name: "Sub-Categories", href: "/admin/subcategories", icon: FolderTree },
+  { name: "Products", href: "/admin/products", icon: CubesIcon },
+  { name: "Orders", href: "/admin/orders", icon: CartFlatbedBoxesIcon },
+  { name: "Earnings", href: "/admin/earnings", icon: MoneyBillCardIcon },
+  { name: "Withdrawals", href: "/admin/withdrawals", icon: MoneyWithdrawalIcon },
+  { name: "Reviews", href: "/admin/reviews", icon: DashboardStarIcon },
+  { name: "Users", href: "/admin/users", icon: Users },
+  { name: "Roles", href: "/admin/roles", icon: ShieldCheck },
+  { name: "Support", href: "/admin/support", icon: LifeBuoy },
+  { name: "Settings", href: "/admin/settings", icon: GearIcon },
+];
+
+// 2. SELLER NAVIGATION
+const sellerNavItems = [
+  { name: "Overview", href: "/seller/overview", icon: GridSquareIcon },
+  { name: "Products", href: "/seller/products", icon: CubesIcon },
+  { name: "Orders", href: "/seller/orders", icon: CartFlatbedBoxesIcon },
+  { name: "Widra & Earnings", href: "/seller/widra-and-earnings", icon: MoneyWithdrawalIcon },
+  { name: "Reviews", href: "/seller/reviews", icon: DashboardStarIcon },
+  { name: "Support", href: "/seller/support", icon: LifeBuoy },
+  { name: "Store Settings", href: "/seller/store-settings", icon: GearIcon },
+];
+
+// 3. BUYER NAVIGATION
+const buyerNavItems = [
+  { name: "Overview", href: "/buyer/overview", icon: GridSquareIcon },
+  { name: "Purchases", href: "/buyer/purchases", icon: ShoppingBag },
+  { name: "Wallet", href: "/buyer/wallet", icon: Wallet },
+  { name: "Support", href: "/buyer/support", icon: LifeBuoy },
+];
+
+// BOTTOM NAVIGATION
+const bottomNavItems = [
+  { name: "Marketplace", href: "/marketplace", icon: GridSquare2Icon, isMarketplace: true },
+];
+
+export default function Sidebar({ isMobileOpen, onMobileClose }) {
   const pathname = usePathname();
   const { user } = useSelector((state) => state.auth);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Navigation items
-  const navItems = [
-    {
-      name: "Dashboard",
-      href: "/dashboard",
-      icon: FaTachometerAlt,
-    },
-    {
-      name: "Orders",
-      href: "/dashboard/orders",
-      icon: FaShoppingBag,
-    },
-    {
-      name: "Profile",
-      href: "/dashboard/profile",
-      icon: FaUser,
-    },
-  ];
+  // Determine current active navigation strictly from authenticated user's role
+  const userRole = (user?.role || "").toLowerCase();
+  let activeRole = "buyer";
+  if (userRole === "admin" || userRole === "super_admin") {
+    activeRole = "admin";
+  } else if (userRole === "seller") {
+    activeRole = "seller";
+  } else if (userRole === "buyer" || userRole === "customer") {
+    activeRole = "buyer";
+  } else if (pathname.startsWith("/admin")) {
+    activeRole = "admin";
+  } else if (pathname.startsWith("/seller")) {
+    activeRole = "seller";
+  }
 
-  // Toggle sidebar collapse
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  // Select items list based on role
+  let navItems = buyerNavItems;
+  if (activeRole === "admin") {
+    navItems = adminNavItems;
+  } else if (activeRole === "seller") {
+    navItems = sellerNavItems;
+  }
 
-  // Sidebar content
-  const SidebarContent = () => (
-    <>
-      {/* Sidebar Header */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-        {!isCollapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-amber-500">Logo</span>
-          </Link>
-        )}
-        {isCollapsed && (
-          <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-            L
-          </div>
-        )}
-        <button
-          onClick={toggleCollapse}
-          className="hidden md:flex p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-        >
-          {isCollapsed ? (
-            <FaChevronRight className="text-gray-600 dark:text-gray-400" />
-          ) : (
-            <FaChevronLeft className="text-gray-600 dark:text-gray-400" />
-          )}
-        </button>
-        {/* Mobile close button */}
-        {onMobileClose && (
-          <button
-            onClick={onMobileClose}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <FaTimes className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </button>
-        )}
-      </div>
+  const renderNavList = (items) => (
+    <ul className="space-y-1">
+      {items.map((item) => {
+        const isOverviewItem = item.href.endsWith("/overview");
+        const baseHref = item.href.replace("/overview", "");
+        const isActive =
+          pathname === item.href ||
+          (isOverviewItem && pathname === baseHref) ||
+          (!isOverviewItem && pathname.startsWith(item.href));
+        const Icon = item.icon;
 
-      {/* User Info */}
-      <div
-        className={`flex items-center gap-3 px-4 py-4 border-b border-gray-200 dark:border-gray-700 ${
-          isCollapsed ? "justify-center" : ""
-        }`}
-      >
-        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-          {user?.image ? (
-            <Image
-              src={user.image}
-              alt={user?.fullName || "User"}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg">
-              {user?.fullName?.charAt(0) || "U"}
-            </div>
-          )}
-        </div>
-        {!isCollapsed && (
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {user?.fullName || "User"}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize truncate">
-              {user?.role || "Customer"}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={onMobileClose}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+        return (
+          <li key={item.name}>
+            <Link
+              href={item.href}
+              onClick={onMobileClose}
+              className={`group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition-all duration-150 ${
+                isActive
+                  ? "bg-brand/10 text-brand font-semibold shadow-xs"
+                  : "text-gray-600 font-medium hover:text-gray-900 hover:bg-gray-50"
+              }`}
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <Icon
+                  size={18}
+                  className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
                     isActive
-                      ? "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  } ${isCollapsed ? "justify-center" : ""}`}
+                      ? "text-brand"
+                      : "text-gray-400 group-hover:text-gray-700"
+                  }`}
+                />
+                <span className="truncate">{item.name}</span>
+              </div>
+              {item.badge && (
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                    isActive
+                      ? "bg-brand text-white"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
                 >
-                  <Icon
-                    className={`w-5 h-5 transition-colors ${
-                      isActive
-                        ? "text-amber-500"
-                        : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-                    }`}
-                  />
-                  {!isCollapsed && <span>{item.name}</span>}
-                  {isCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                      {item.name}
-                    </div>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
 
-      {/* Bottom spacing - removed logout button */}
-      <div className="h-4" />
-    </>
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-white">
+      {/* Brand Header with ACCZORA Logo */}
+      <div className="flex items-center justify-between h-20 px-6 border-b border-border flex-shrink-0">
+        <Link
+          href={
+            activeRole === "admin"
+              ? "/admin/overview"
+              : activeRole === "buyer"
+              ? "/buyer/overview"
+              : "/seller/overview"
+          }
+          className="flex items-center"
+        >
+          <Image
+            src="/logo.png"
+            alt="ACCZORA - trade with confidence"
+            width={140}
+            height={36}
+            priority
+            className="h-8 w-auto object-contain"
+          />
+        </Link>
+
+        {onMobileClose && (
+          <Button
+            variant="ghost"
+            size="icon_sm"
+            rounded="lg"
+            onClick={onMobileClose}
+            className="md:hidden text-gray-400 hover:text-gray-700"
+            aria-label="Close navigation"
+          >
+            <X size={20} />
+          </Button>
+        )}
+      </div>
+
+      {/* Main Navigation Scroll Area */}
+      <div className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
+        <div>{renderNavList(navItems)}</div>
+      </div>
+
+      {/* Bottom Fixed Section: Marketplace Link */}
+      <div className="p-4 border-t border-border flex-shrink-0">
+        <Link
+          href="/marketplace"
+          onClick={onMobileClose}
+          className="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:text-brand hover:bg-brand/5 border border-transparent hover:border-brand/20 transition-all duration-150"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <GridSquare2Icon
+              size={18}
+              className="w-[18px] h-[18px] flex-shrink-0 text-gray-400 group-hover:text-brand transition-colors"
+            />
+            <span className="truncate">Marketplace</span>
+          </div>
+          <ExternalLink size={14} className="text-gray-400 group-hover:text-brand transition-colors" />
+        </Link>
+      </div>
+    </div>
   );
 
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside
-        className={`hidden md:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-20" : "w-64"
-        }`}
-      >
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-border flex-shrink-0">
         <SidebarContent />
       </aside>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <SidebarContent />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
           onClick={onMobileClose}
         />
       )}
     </>
   );
-};
-
-export default Sidebar;
+}

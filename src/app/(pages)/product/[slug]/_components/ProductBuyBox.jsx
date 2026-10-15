@@ -82,6 +82,7 @@ export default function ProductBuyBox({ product }) {
   const handleBuyNow = () => {
     const cartItem = {
       productId: id || 3,
+      name: title || "Product",
       productTitle: title,
       title: title,
       price: price,
