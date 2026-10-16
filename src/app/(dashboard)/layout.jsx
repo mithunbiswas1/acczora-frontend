@@ -35,8 +35,8 @@ export default function DashboardLayout({ children }) {
   const currentUser = profileData?.data || user;
 
   useEffect(() => {
-    // Check if token exists in cookie or localStorage
-    const token = getCookie("accessToken") || (typeof window !== "undefined" && localStorage.getItem("accessToken"));
+    // Check if token exists in cookie
+    const token = getCookie("accessToken");
     if (!token && !isLoggedIn) {
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
       return;
@@ -56,6 +56,11 @@ export default function DashboardLayout({ children }) {
         return;
       }
     } else if (role === "seller") {
+      if (currentUser?.sellerStatus === "pending") {
+        toast.error("Your seller account is currently pending admin approval.");
+        router.replace("/login");
+        return;
+      }
       if (pathname.startsWith("/admin") || pathname.startsWith("/buyer")) {
         router.replace("/seller/overview");
         return;

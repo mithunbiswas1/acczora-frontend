@@ -177,9 +177,25 @@ export default function SearchModal({ isOpen, onClose }) {
                           {product.category} • {product.specs}
                         </Caption>
                       </div>
-                      <span className="shrink-0 text-sm font-semibold text-primary">
-                        ${product.price.toFixed(2)}
-                      </span>
+                      {(() => {
+                        const regularPrice = Number(product.price || 0);
+                        const salePrice = Number(product.salePrice || product.discountPrice || 0);
+                        const hasDiscount = salePrice > 0 && salePrice < regularPrice;
+                        const activePrice = hasDiscount ? salePrice : regularPrice;
+
+                        return (
+                          <div className="shrink-0 flex items-baseline gap-1.5">
+                            <span className="text-sm font-bold text-primary">
+                              ${activePrice.toFixed(2)}
+                            </span>
+                            {hasDiscount && (
+                              <span className="text-xs text-gray-400 line-through">
+                                ${regularPrice.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </Link>
                   </li>
                 ))}

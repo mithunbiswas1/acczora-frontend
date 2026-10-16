@@ -2,15 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
 import {
   useSendOtpMutation,
   useOtpVerifyLoginMutation,
 } from "@/redux/api/authApi";
+import { setLogin } from "@/redux/slice/authSlice";
+import { setCookie } from "@/utils/cookie";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 const SignInForm = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     mobile: "",
@@ -60,13 +64,25 @@ const SignInForm = () => {
           otp: formData.otp,
         }).unwrap();
 
-        // ✅ Save token and user properly
-        localStorage.setItem("accessToken", res.token);
-        localStorage.setItem("user", JSON.stringify(res.user));
+        const token = res.token || res.accessToken;
+        const user = res.user;
+
+        // Save token and user securely in Cookies (NOT in localStorage)
+        if (token) {
+          setCookie("accessToken", token, 7);
+        }
+        if (res.refreshToken) {
+          setCookie("refreshToken", res.refreshToken, 30);
+        }
+        if (user?.role) {
+          setCookie("userRole", user.role, 7);
+        }
+
+        dispatch(setLogin({ user, token, refreshToken: res.refreshToken }));
 
         window.dispatchEvent(new Event("login"));
 
-        toast.success(`Welcome back ${res.user.name || "User"}!`);
+        toast.success(`Welcome back ${user?.name || user?.fullName || "User"}!`);
 
         setFormData({ mobile: "", otp: "" });
         router.push("/");

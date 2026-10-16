@@ -2,8 +2,18 @@
 
 "use client";
 
-import { useState } from "react";
-import { Star, MessageSquare, CheckCircle, Search, ThumbsUp } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
+import {
+  Star,
+  MessageSquare,
+  CheckCircle,
+  Search,
+  ThumbsUp,
+  Loader2,
+  Clock,
+} from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import Badge from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
@@ -13,7 +23,10 @@ import Textarea from "@/components/ui/Textarea";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
-import { Typography, H3, P, Caption } from "@/components/ui/Typography";
+import {
+  useGetStoreReviewsQuery,
+  useReplyToReviewMutation,
+} from "@/redux/api/reviewApi";
 import { toast } from "sonner";
 
 const SELLER_RATING_OPTIONS = [
@@ -25,266 +38,295 @@ const SELLER_RATING_OPTIONS = [
   { label: "1 Star ★", value: "1" },
 ];
 
-const DEMO_REVIEWS = [
-  {
-    id: "rev-1",
-    buyer: "Alex Mercer",
-    product: "Netflix Premium UHD 4K (1 Month)",
-    rating: 5,
-    comment: "Delivered immediately in less than 5 seconds. Account works perfectly on my smart TV! Highly recommended seller.",
-    date: "Oct 12, 2026",
-    status: "approved",
-    sellerReply: "Thank you for shopping with NovaStore! Enjoy your streaming.",
-  },
-  {
-    id: "rev-2",
-    buyer: "Sarah Jenkins",
-    product: "Canva Pro Educational (1 Year)",
-    rating: 5,
-    comment: "Invitation link joined my Canva workspace flawlessly. All Pro templates and fonts unlocked right away.",
-    date: "Oct 11, 2026",
-    status: "approved",
-    sellerReply: null,
-  },
-  {
-    id: "rev-3",
-    buyer: "Devin Vance",
-    product: "ChatGPT Plus Shared Profile",
-    rating: 5,
-    comment: "Fast auto-delivery. GPT-4o and DALL-E work smoothly with no login hitches.",
-    date: "Oct 10, 2026",
-    status: "approved",
-    sellerReply: "Glad to hear that, Devin! Reach out anytime if you need renewal.",
-  },
-  {
-    id: "rev-4",
-    buyer: "Elena Rostova",
-    product: "NordVPN Dedicated IP (2 Years)",
-    rating: 4,
-    comment: "Great speed and clean dedicated IP. Good seller, responded fast to my query.",
-    date: "Oct 08, 2026",
-    status: "approved",
-    sellerReply: null,
-  },
-  {
-    id: "rev-5",
-    buyer: "Carlos Mendes",
-    product: "Spotify Family Slot (6 Months)",
-    rating: 5,
-    comment: "Accepted family invite with zero location issues. Best price on the platform.",
-    date: "Oct 04, 2026",
-    status: "approved",
-    sellerReply: null,
-  },
-];
-
 export default function SellerReviewsPage() {
-  const [reviews, setReviews] = useState(DEMO_REVIEWS);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [starFilter, setStarFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const { user } = useSelector((state) => state.auth);
+  const sellerId = user?._id || user?.id;
 
-  const [replyingReview, setReplyingReview] = useState(null);
-  const [replyText, setReplyText] = useState("");
-
-  const handleSendReply = (e) => {
-    e.preventDefault();
-    if (!replyText.trim()) return;
-
-    setReviews(
-      reviews.map((r) =>
-        r.id === replyingReview.id ? { ...r, sellerReply: replyText } : r
-      )
-    );
-    toast.success("Reply posted to customer review!");
-    setReplyingReview(null);
-    setReplyText("");
-  };
-
-  const filtered = reviews.filter((r) => {
-    const matchesSearch =
-      r.buyer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.comment.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStar =
-      starFilter === "all" || r.rating.toString() === starFilter;
-
-    return matchesSearch && matchesStar;
+  const { data: reviewsData, isLoading } = useGetStoreReviewsQuery(sellerId, {
+    skip: !sellerId,
   });
 
-  const totalItems = filtered.length;
+  const [replyToReview, { isLoading: isReplying }] =
+    useReplyToReviewMutation();
+
+  const [selectedRating, setSelectedRating] = useState("all");
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  // Reply Modal
+  const [activeReplyReview, setActiveReplyReview] = useState(null);
+  const [replyText, setReplyText] = useState("");
+
+  const rawReviews = useMemo(() => {
+    return Array.isArray(reviewsData?.data?.reviews)
+      ? reviewsData.data.reviews
+      : Array.isArray(reviewsData?.data)
+      ? reviewsData.data
+      : [];
+  }, [reviewsData]);
+
+  // Filtering
+  const filteredReviews = useMemo(() => {
+    return rawReviews.filter((r) => {
+      if (selectedRating !== "all" && String(r.rating) !== selectedRating)
+        return false;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const matchesProduct = r.productTitle?.toLowerCase().includes(q);
+        const matchesBuyer = r.buyerName?.toLowerCase().includes(q);
+        const matchesComment = r.comment?.toLowerCase().includes(q);
+        if (!matchesProduct && !matchesBuyer && !matchesComment) return false;
+      }
+      return true;
+    });
+  }, [rawReviews, selectedRating, search]);
+
+  // Pagination
+  const totalItems = filteredReviews.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
-  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedReviews = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredReviews.slice(start, start + pageSize);
+  }, [filteredReviews, currentPage, pageSize]);
+
+  const handleOpenReplyModal = (rev) => {
+    setActiveReplyReview(rev);
+    setReplyText(rev.sellerReply || "");
+  };
+
+  const handleSendReply = async (e) => {
+    e.preventDefault();
+    if (!replyText.trim()) {
+      toast.error("Please enter a response message");
+      return;
+    }
+
+    try {
+      await replyToReview({
+        id: activeReplyReview._id || activeReplyReview.id,
+        reply: replyText.trim(),
+      }).unwrap();
+
+      toast.success("Reply published successfully!");
+      setActiveReplyReview(null);
+      setReplyText("");
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to post reply");
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Overview Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border">
-        <div>
-          <H3 className="text-xl font-bold text-gray-900">Customer Ratings & Reviews</H3>
-          <P className="text-xs text-gray-500 mt-1">
-            Real feedback from verified account buyers.
-          </P>
-        </div>
-        <div className="flex items-center gap-3 bg-[#fffaf0] border border-amber-200 p-3 rounded-2xl">
-          <div className="flex items-center gap-1 text-amber-500">
-            <Star size={20} className="fill-amber-400 text-amber-400" />
-            <span className="text-xl font-extrabold text-gray-900">4.9</span>
-          </div>
-          <Caption className="text-gray-500 font-semibold">
-            Based on 184 verified sales
-          </Caption>
-        </div>
-      </div>
+    <div className="space-y-6 pb-16">
+      {/* Page Header */}
+      <PageHeader
+        title="Store Customer Reviews"
+        description="View approved reviews left by buyers on your digital accounts and engage with your customers."
+      />
 
-      {/* Filter and Search */}
-      <div className="bg-white p-4 rounded-2xl border border-border flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="w-full md:w-80">
+      {/* Outside Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="w-full sm:w-80">
           <SearchInput
-            placeholder="Search reviews by buyer or product..."
-            value={searchTerm}
+            placeholder="Search by buyer, product, or comment..."
+            value={search}
             onChange={(e) => {
-              setSearchTerm(e.target.value);
+              setSearch(e.target.value);
               setCurrentPage(1);
             }}
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Caption className="text-gray-400 font-medium">Rating:</Caption>
+        <div className="w-full sm:w-48">
           <SearchableSelect
-            value={starFilter}
+            value={selectedRating}
             onChange={(e) => {
-              setStarFilter(e.target.value);
+              setSelectedRating(e.target.value);
               setCurrentPage(1);
             }}
             options={SELLER_RATING_OPTIONS}
-            placeholder="All Ratings"
-            size="sm"
-            clearable={false}
-            className="w-40"
+            placeholder="Filter by stars"
           />
         </div>
       </div>
 
-      {/* Reviews List */}
-      <div className="bg-white rounded-2xl border border-border divide-y divide-border overflow-hidden">
-        {paginated.length === 0 ? (
+      {/* Reviews List Card */}
+      <Card className="overflow-hidden bg-white border border-border shadow-xs">
+        {isLoading ? (
+          <div className="py-20 text-center space-y-3">
+            <Loader2 className="w-8 h-8 text-[#5b52f9] animate-spin mx-auto" />
+            <p className="text-xs text-gray-400">Loading customer reviews...</p>
+          </div>
+        ) : filteredReviews.length === 0 ? (
           <EmptyState
+            variant="search"
             title="No reviews found"
-            description="No customer reviews match your filter."
+            description="No customer reviews match your active filter."
+            onClear={() => {
+              setSearch("");
+              setSelectedRating("all");
+            }}
           />
         ) : (
-          paginated.map((rev) => (
-            <div key={rev.id} className="p-6 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-900">{rev.buyer}</span>
-                    <Badge variant="active" size="sm">Verified Buyer</Badge>
-                  </div>
-                  <Caption className="text-gray-500 mt-0.5">
-                    Purchased: <strong className="text-gray-700">{rev.product}</strong>
-                  </Caption>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center text-amber-400">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        size={14}
-                        className={i < rev.rating ? "fill-amber-400 text-amber-400" : "text-gray-200"}
-                      />
-                    ))}
-                  </div>
-                  <Caption className="text-gray-400">{rev.date}</Caption>
-                </div>
-              </div>
+          <div className="divide-y divide-gray-100">
+            {paginatedReviews.map((rev) => {
+              const revId = rev._id || rev.id;
 
-              <Typography variant="p" className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-border/60">
-                &ldquo;{rev.comment}&rdquo;
-              </Typography>
-
-              {rev.sellerReply ? (
-                <div className="ml-4 pl-3 border-l-2 border-brand text-xs text-gray-600 bg-brand/5 p-3 rounded-r-xl">
-                  <span className="font-bold text-brand block mb-0.5">Your Response:</span>
-                  {rev.sellerReply}
-                </div>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => {
-                    setReplyingReview(rev);
-                    setReplyText("");
-                  }}
-                  className="text-brand"
+              return (
+                <div
+                  key={revId}
+                  className="p-5 sm:p-6 hover:bg-gray-50/40 transition-colors space-y-3"
                 >
-                  <MessageSquare size={13} /> Reply to Buyer
-                </Button>
-              )}
-            </div>
-          ))
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={rev.buyerAvatar || "/review_avater.jpg"}
+                        alt=""
+                        className="w-8 h-8 rounded-full object-cover border border-gray-100"
+                      />
+                      <div>
+                        <p className="text-xs font-bold text-gray-900">
+                          {rev.buyerName || "Verified Buyer"}
+                        </p>
+                        <p className="text-[11px] text-gray-400">
+                          Purchased:{" "}
+                          <span className="font-semibold text-gray-700">
+                            {rev.productTitle}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-0.5 text-amber-400">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={13}
+                            className={
+                              i < rev.rating
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-gray-200"
+                            }
+                          />
+                        ))}
+                      </div>
+                      <span className="text-[11px] text-gray-400">
+                        {new Date(rev.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Comment */}
+                  <p className="text-xs text-gray-700 leading-relaxed pl-1">
+                    &ldquo;{rev.comment}&rdquo;
+                  </p>
+
+                  {/* Seller Reply Box */}
+                  {rev.sellerReply ? (
+                    <div className="mt-3 p-3.5 bg-purple-50/60 rounded-xl border border-purple-100/80 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#5b52f9] flex items-center gap-1.5 text-[11px]">
+                          <MessageSquare size={12} />
+                          Your Public Response
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="xs"
+                          rounded="lg"
+                          onClick={() => handleOpenReplyModal(rev)}
+                          className="text-[11px] text-gray-500 hover:text-gray-900"
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed">
+                        {rev.sellerReply}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="pt-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        rounded="xl"
+                        onClick={() => handleOpenReplyModal(rev)}
+                        className="text-xs text-gray-700"
+                      >
+                        <MessageSquare size={12} className="text-[#5b52f9]" />
+                        <span>Reply to Customer</span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
-      </div>
+      </Card>
 
       {/* Pagination in its own Card */}
-      {paginatedReviews.length > 0 && (
-        <Card className="bg-white p-4">
+      {totalItems > 0 && (
+        <Card className="bg-white p-4 border border-border shadow-xs">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={(p) => setCurrentPage(p)}
+            showAlways={totalItems > 0}
           />
         </Card>
       )}
 
       {/* Reply Modal */}
-      {replyingReview && (
+      {activeReplyReview && (
         <Modal
-          isOpen={!!replyingReview}
-          onClose={() => setReplyingReview(null)}
-          title={`Reply to ${replyingReview.buyer}`}
-          maxWidth="max-w-md"
+          isOpen={!!activeReplyReview}
+          onClose={() => setActiveReplyReview(null)}
+          title="Reply to Customer Feedback"
         >
-          <form onSubmit={handleSendReply} className="space-y-4">
-            <Caption className="text-gray-500 bg-gray-50 p-3 rounded-xl border border-border block">
-              &ldquo;{replyingReview.comment}&rdquo;
-            </Caption>
-
-            <div>
-              <Textarea
-                required
-                label="Your Public Response"
-                rows={3}
-                placeholder="Thank you for your purchase! We are glad you enjoyed the service..."
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                className="w-full text-xs"
-              />
+          <form onSubmit={handleSendReply} className="p-6 space-y-4">
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs">
+              <p className="font-bold text-gray-900">
+                {activeReplyReview.buyerName} on{" "}
+                {activeReplyReview.productTitle}
+              </p>
+              <p className="text-gray-600 italic mt-1">
+                &ldquo;{activeReplyReview.comment}&rdquo;
+              </p>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Textarea
+              label="Your Public Reply"
+              required
+              rows={4}
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Write a professional thank you or customer support response..."
+            />
+
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="outline-border"
+                size="default"
                 rounded="xl"
-                onClick={() => setReplyingReview(null)}
+                onClick={() => setActiveReplyReview(null)}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="brand"
-                size="sm"
+                size="default"
                 rounded="xl"
+                disabled={isReplying}
               >
-                Post Response
+                {isReplying && <Loader2 size={14} className="animate-spin" />}
+                <span>Post Reply</span>
               </Button>
             </div>
           </form>

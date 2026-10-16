@@ -5,11 +5,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, ShoppingBasket, ChevronDown, Menu, X } from "lucide-react";
+import { Heart, ShoppingBasket, ChevronDown, Menu, X, Coins } from "lucide-react";
 import { SearchIcon, ButtonArrowIcon } from "@/icons";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { IconButton } from "@/components/ui/IconButton";
 import { useSelector } from "react-redux";
+import { useGetMyPointsQuery } from "@/redux/api/orderApi";
 import SearchBar from "./SearchBar";
 import SearchModal from "./SearchModal";
 
@@ -33,6 +34,10 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
 
   const { user, isLoggedIn } = useSelector((state) => state.auth);
+  const { data: myPointsRes } = useGetMyPointsQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+  const balance = Number(myPointsRes?.data?.points ?? user?.points ?? 0);
 
   useEffect(() => {
     setMounted(true);
@@ -175,14 +180,16 @@ export default function Navbar() {
               );
             })}
 
-            <LinkButton
-              href="/become-a-seller"
-              variant="pill"
-              size="sm"
-              className="mx-3"
-            >
-              Become a Seller
-            </LinkButton>
+            {mounted && (!isLoggedIn || user?.role === "buyer" || user?.role === "customer") && (
+              <LinkButton
+                href="/become-a-seller"
+                variant="pill"
+                size="sm"
+                className="mx-3"
+              >
+                Become a Seller
+              </LinkButton>
+            )}
           </div>
 
           {/* Right Actions */}
@@ -193,11 +200,17 @@ export default function Navbar() {
               <IconButton href="/cart" icon={ShoppingBasket} label="Cart" />
             </div>
 
-            <div className="hidden md:flex items-center gap-3.5">
+            <div className="hidden md:flex items-center gap-3">
               {mounted && isLoggedIn ? (
-                <LinkButton href={getDashboardHref(user?.role)} variant="solid">
-                  Dashboard
-                </LinkButton>
+                <>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-xs font-bold tracking-tight shadow-2xs select-none">
+                    <span>Balance:</span>
+                    <span className="font-extrabold">${balance.toFixed(2)}</span>
+                  </div>
+                  <LinkButton href={getDashboardHref(user?.role)} variant="solid">
+                    Dashboard
+                  </LinkButton>
+                </>
               ) : (
                 <>
                   <LinkButton href="/login" variant="outline">
@@ -365,17 +378,19 @@ export default function Navbar() {
             </nav>
 
             {/* Become a Seller CTA */}
-            <div className="pt-2">
-              <LinkButton
-                href="/become-a-seller"
-                variant="pill"
-                size="default"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full justify-center"
-              >
-                Become a Seller
-              </LinkButton>
-            </div>
+            {mounted && (!isLoggedIn || user?.role === "buyer" || user?.role === "customer") && (
+              <div className="pt-2">
+                <LinkButton
+                  href="/become-a-seller"
+                  variant="pill"
+                  size="default"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full justify-center"
+                >
+                  Become a Seller
+                </LinkButton>
+              </div>
+            )}
 
             {/* Quick Actions (Wishlist & Cart) */}
             <div className="grid grid-cols-2 gap-3 pt-2">
@@ -401,14 +416,20 @@ export default function Navbar() {
           {/* Footer Auth Buttons */}
           <div className="mt-auto border-t border-gray-100 p-5 space-y-2.5 bg-gray-50/50">
             {mounted && isLoggedIn ? (
-              <LinkButton
-                href={getDashboardHref(user?.role)}
-                variant="solid"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full justify-center py-2.5"
-              >
-                Go to Dashboard
-              </LinkButton>
+              <>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 text-xs font-bold">
+                  <span>Your Balance:</span>
+                  <span className="text-sm font-extrabold">${balance.toFixed(2)}</span>
+                </div>
+                <LinkButton
+                  href={getDashboardHref(user?.role)}
+                  variant="solid"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full justify-center py-2.5"
+                >
+                  Go to Dashboard
+                </LinkButton>
+              </>
             ) : (
               <>
                 <LinkButton

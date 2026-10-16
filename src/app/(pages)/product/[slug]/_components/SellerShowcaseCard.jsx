@@ -4,15 +4,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { StarIcon, StarSimpleCheckIcon, BasketDollarIcon, BadgeCheckIcon } from "@/icons";
 
-export default function SellerShowcaseCard({ seller }) {
-  const {
-    name = seller?.name || "NovaStore",
-    avatar = "/seller_avater.jpg",
-    verified = true,
-    rating = 4.9,
-    sales = "1,284",
-    positiveRating = "98%",
-  } = seller || {};
+import { getSafeImageSrc } from "@/utils/imageUtils";
+
+export default function SellerShowcaseCard({ seller = {} }) {
+  const name =
+    seller?.shopName || seller?.fullName || seller?.name || "Verified Seller";
+  const slug =
+    seller?.shopSlug || seller?.userName || seller?.slug || "store";
+  const avatar = getSafeImageSrc(
+    seller?.image || seller?.avatar,
+    "/seller_avater.jpg"
+  );
+  const verified = true;
+  const rating = seller?.rating || 4.9;
+  const sales = seller?.sales || "1,284";
+  const positiveRating = seller?.positiveRating || "99%";
 
   return (
     <section id="seller" className="mt-14 sm:mt-16 scroll-mt-24">
@@ -21,7 +27,7 @@ export default function SellerShowcaseCard({ seller }) {
         <div className="flex items-center gap-4 sm:gap-5">
           {/* Avatar */}
           <Link
-            href={`/seller/${seller?.slug || "nova-store"}`}
+            href={`/store/${slug}`}
             className="relative size-16 sm:size-18 rounded-full overflow-hidden bg-gray-100 shrink-0 border border-gray-200 hover:opacity-85 transition-opacity"
             title={`Visit ${name}`}
           >
@@ -38,20 +44,19 @@ export default function SellerShowcaseCard({ seller }) {
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <Link
-                href={`/seller/${seller?.slug || "nova-store"}`}
+                href={`/store/${slug}`}
                 className="text-lg sm:text-xl font-bold text-primary hover:text-brand transition-colors"
               >
                 {name}
               </Link>
               {verified && (
-                <Link
-                  href="/seller"
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF6FF] hover:bg-[#DBEAFE] text-info text-xs font-semibold transition-colors"
-                  title="Browse verified sellers"
+                <div
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF6FF] text-info text-xs font-semibold"
+                  title="Verified Seller"
                 >
                   <BadgeCheckIcon size={14} color="#2563EB" />
                   <span>Verified Seller</span>
-                </Link>
+                </div>
               )}
             </div>
 
@@ -78,7 +83,7 @@ export default function SellerShowcaseCard({ seller }) {
         {/* Right: Action Button */}
         <div className="w-full sm:w-auto shrink-0">
           <Link
-            href={`/seller/${seller?.slug || "nova-store"}`}
+            href={`/store/${slug}`}
             className="w-full sm:w-auto px-6 py-2.5 rounded-[8px] bg-brand hover:bg-brand-hover text-white text-xs sm:text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <span>Visit Store</span>

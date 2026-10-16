@@ -422,18 +422,14 @@ export default function SellerProductsPage() {
                               <SquarePen size={14} className="stroke-[1.8]" />
                             </Link>
 
-                            {/* 2. View Credentials */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedProduct(product);
-                                setIsStockModalOpen(true);
-                              }}
-                              className="p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
-                              title="View Account Stock"
+                            {/* 2. View Credentials & Inventory */}
+                            <Link
+                              href={`/seller/products/view/${product._id}`}
+                              className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
+                              title="View Account Stock & Inventory"
                             >
                               <Eye size={14} className="stroke-[1.8]" />
-                            </button>
+                            </Link>
 
                             {/* 3. Status Circle Button */}
                             <button

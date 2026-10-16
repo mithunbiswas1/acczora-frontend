@@ -83,6 +83,26 @@ export const authApi = apiSlice.injectEndpoints({
       invalidatesTags: ["Auth", "Profile"],
     }),
 
+    // Become a Seller API
+    becomeSeller: builder.mutation({
+      query: (data) => ({
+        url: endpoints.auth.becomeSeller,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Auth", "Profile", "Store"],
+    }),
+
+    // Update Profile API
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: "update-profile",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Auth", "Profile"],
+    }),
+
     // Super Admin - Delete User
     deleteUserByAdmin: builder.mutation({
       query: (userId) => ({
@@ -104,5 +124,7 @@ export const {
   useGetAdminUsersQuery,
   useUpdateUserByAdminMutation,
   useDeleteUserByAdminMutation,
+  useBecomeSellerMutation,
+  useUpdateProfileMutation,
 } = authApi;
 

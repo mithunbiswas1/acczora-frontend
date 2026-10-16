@@ -1,20 +1,39 @@
 // src/redux/endpoints/endpoints.js
 
 export const endpoints = {
-  //Auth API
+  // 1. Auth & User API
   auth: {
     registration: "register",
     login: "login",
     sendOtp: "new-otp",
     otpVerifyLogin: "otp-verify",
+    logout: "logout",
+    getUserProfile: "get-user-profile",
+    updateUser: "update-user",
+    updatePassword: "update-password",
+    becomeSeller: "become-seller",
   },
 
-  // Order endpoints
-  order: {
-    createOrder: "create-order",
+  // 2. User Management (Admin)
+  user: {
+    getAllUsers: "get-list-users",
+    getUserById: "get-user-profile",
+    updateUserByAdmin: "update-user-by-admin",
+    deleteUserByAdmin: "delete-user-by-admin",
+    getActiveAuthors: "get-all-active-authors",
+    getAuthorProfile: "author-profile",
   },
 
-  // Category API
+  // 3. Role & Permissions API
+  role: {
+    getAllRoles: "get-all-roles",
+    getRoleById: "get-role-by-id",
+    createRole: "create-role",
+    updateRole: "update-role",
+    deleteRole: "delete-role",
+  },
+
+  // 4. Category API
   category: {
     getAllCategories: "get-all-categories",
     getListCategories: "get-list-categories",
@@ -26,7 +45,7 @@ export const endpoints = {
     toggleCategoryStatus: "toggle-category-status",
   },
 
-  // Subcategory API
+  // 5. Subcategory (Dub category) API
   subcategory: {
     getAllSubcategories: "get-all-subcategories",
     getListSubcategories: "get-list-subcategories",
@@ -38,7 +57,7 @@ export const endpoints = {
     toggleSubcategoryStatus: "toggle-subcategory-status",
   },
 
-  // Product API
+  // 6. Product API
   product: {
     getAllProducts: "get-all-products",
     getSellerProducts: "get-seller-products",
@@ -50,26 +69,81 @@ export const endpoints = {
     toggleProductStatus: "toggle-product-status",
   },
 
-  //Product Review
-  productReview: {
-    productReview: "product-review",
+  // 7. Order API
+  order: {
+    createOrder: "create-order",
+    getBuyerOrders: "get-buyer-orders",
+    getSellerOrders: "get-seller-orders",
+    getAllOrders: "get-all-orders",
+    getOrderById: "get-order-by-id",
+    buyPoints: "buy-points",
+    getMyPoints: "my-points",
   },
 
-  //Profile API
+  // 8. Earning & Escrow API
+  earning: {
+    getSellerEarnings: "get-seller-earnings",
+    getAllEarnings: "get-all-earnings",
+    releaseEscrow: "release-escrow",
+  },
+
+  // 9. Withdraw & Payouts API
+  withdraw: {
+    createWithdraw: "create-withdraw",
+    getMyWithdrawals: "get-my-withdrawals",
+    getAllWithdrawals: "get-all-withdrawals",
+    updateWithdrawStatus: "update-withdraw-status",
+  },
+
+  // 10. Review API
+  review: {
+    createReview: "create-review",
+    getBuyerReviews: "get-buyer-reviews",
+    getProductReviews: "get-product-reviews",
+    getStoreReviews: "get-store-reviews",
+    getAdminReviews: "get-admin-reviews",
+    approveReview: "approve-review",
+    rejectReview: "reject-review",
+    deleteReview: "delete-review",
+    replyToReview: "reply-to-review",
+  },
+
+  // 11. Support & Dispute Tickets API
+  support: {
+    createTicket: "create-ticket",
+    getMyTickets: "get-my-tickets",
+    getTicketById: "get-ticket-by-id",
+    replyTicket: "reply-ticket",
+    getAllTickets: "get-all-tickets",
+    updateTicketStatus: "update-ticket-status",
+  },
+
+  // 12. Store & Settings API
+  store: {
+    getStoreSettings: "get-store-settings",
+    updateStoreSettings: "update-store-settings",
+    getStoreBySlug: "get-store-by-slug",
+    getAllStores: "get-all-stores",
+    toggleStoreVerification: "toggle-store-verification",
+  },
+
+  setting: {
+    getPlatformSettings: "get-platform-settings",
+    updatePlatformSettings: "update-platform-settings",
+    getSetting: "setting",
+  },
+
+  // Profile API
   profile: {
     profile: "profile",
   },
 
-  //Pages API
+  // Pages & Contact
   pages: {
     contact: "contact",
   },
 
-  //Setting API
-  setting: {
-    getSetting: "setting",
-  },
-  //Tracking API
+  // Tracking API
   tracking: {
     getTracking: "track",
   },

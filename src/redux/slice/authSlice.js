@@ -3,10 +3,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { setCookie, getCookie, deleteCookie } from "@/utils/cookie";
 
-// Load auth state from cookies (with localStorage fallback)
+// Load auth state strictly from cookies (tokens are sensitive and never stored in localStorage)
 const loadAuthFromStorage = () => {
   if (typeof window !== "undefined") {
-    const token = getCookie("accessToken") || localStorage.getItem("accessToken");
+    const token = getCookie("accessToken");
     const userStr = localStorage.getItem("user");
 
     if (token) {
@@ -14,7 +14,6 @@ const loadAuthFromStorage = () => {
         const user = userStr ? JSON.parse(userStr) : null;
         if (user?.role) {
           setCookie("userRole", user.role, 7);
-          localStorage.setItem("userRole", user.role);
         }
         return {
           isLoggedIn: true,
@@ -49,7 +48,7 @@ const authSlice = createSlice({
       state.user = user;
       state.token = token;
 
-      // Save token & userRole to cookies (7 days expiry for session persistence)
+      // Save sensitive tokens & userRole strictly to secure Cookies
       if (token) {
         setCookie("accessToken", token, 7);
       }
@@ -60,12 +59,11 @@ const authSlice = createSlice({
         setCookie("userRole", user.role, 7);
       }
 
-      // Also persist to localStorage for fast hydration
+      // Persist display user profile only (never store sensitive tokens in localStorage)
       if (typeof window !== "undefined") {
-        if (token) localStorage.setItem("accessToken", token);
-        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-        if (user?.role) localStorage.setItem("userRole", user.role);
         if (user) localStorage.setItem("user", JSON.stringify(user));
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
       }
     },
     setLogout: (state) => {

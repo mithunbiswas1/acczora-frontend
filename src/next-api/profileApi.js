@@ -1,9 +1,8 @@
-// src/lib/profileApi.js
-
 import { API_BASE_URL } from "@/config/base-url";
+import { getCookie } from "@/utils/cookie";
 
 /**
- * Get authorization header from localStorage token
+ * Get authorization header from Cookies
  */
 const getAuthHeaders = (isFormData = false) => {
   const headers = {};
@@ -13,7 +12,7 @@ const getAuthHeaders = (isFormData = false) => {
   }
 
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken");
+    const token = getCookie("accessToken");
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }

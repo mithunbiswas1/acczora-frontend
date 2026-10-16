@@ -13,7 +13,7 @@ export default function DashboardRedirectPage() {
   const { user, isLoggedIn } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const token = getCookie("accessToken") || (typeof window !== "undefined" && localStorage.getItem("accessToken"));
+    const token = getCookie("accessToken");
     if (!token && !isLoggedIn) {
       router.replace("/login");
       return;

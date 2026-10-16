@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   Search,
   Eye,
@@ -12,6 +13,7 @@ import {
   Download,
   Copy,
   Lock,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -31,118 +33,92 @@ import EmptyState from "@/components/ui/EmptyState";
 import CredentialViewer from "@/components/ui/CredentialViewer";
 import { Button } from "@/components/ui/Button";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
+import { useGetSellerOrdersQuery } from "@/redux/api/orderApi";
 
 const SELLER_ORDER_STATUS_OPTIONS = [
   { label: "All Orders", value: "all" },
   { label: "Completed", value: "completed" },
+  { label: "Processing", value: "processing" },
   { label: "Disputed", value: "disputed" },
   { label: "Refunded", value: "refunded" },
 ];
 
-const DEMO_ORDERS = [
-  {
-    id: "#ORD-9821",
-    product: "Netflix Premium 4K (1 Month)",
-    category: "Streaming",
-    buyer: "Alex Mercer",
-    buyerEmail: "alex.m@gmail.com",
-    amount: "$14.50",
-    date: "Oct 12, 2026",
-    status: "completed",
-    credentials: "alex_netf_user@netflix.com:SecretStream992",
-    warrantyUntil: "Nov 12, 2026",
-  },
-  {
-    id: "#ORD-9820",
-    product: "Canva Pro Educational (1 Year)",
-    category: "Design",
-    buyer: "Sarah Jenkins",
-    buyerEmail: "sarah.j@outlook.com",
-    amount: "$9.00",
-    date: "Oct 11, 2026",
-    status: "completed",
-    credentials: "https://www.canva.com/brand/join?token=xYz789_edu_invitation",
-    warrantyUntil: "Oct 11, 2027",
-  },
-  {
-    id: "#ORD-9819",
-    product: "ChatGPT Plus Shared Profile",
-    category: "AI Tools",
-    buyer: "Devin Vance",
-    buyerEmail: "devin.v@gmail.com",
-    amount: "$12.00",
-    date: "Oct 11, 2026",
-    status: "completed",
-    credentials: "chat_pro_share11@openai-team.com:PlusPass7721",
-    warrantyUntil: "Nov 11, 2026",
-  },
-  {
-    id: "#ORD-9818",
-    product: "Spotify Family Slot (6 Months)",
-    category: "Music",
-    buyer: "Ravi Patel",
-    buyerEmail: "ravi.p@yahoo.com",
-    amount: "$7.50",
-    date: "Oct 10, 2026",
-    status: "completed",
-    credentials: "spotify_family_invite@music.org:Sp0t1fyFam99",
-    warrantyUntil: "Apr 10, 2027",
-  },
-  {
-    id: "#ORD-9817",
-    product: "NordVPN Dedicated IP (2 Years)",
-    category: "VPN / Security",
-    buyer: "Elena Rostova",
-    buyerEmail: "elena@crypto.io",
-    amount: "$22.00",
-    date: "Oct 09, 2026",
-    status: "completed",
-    credentials: "vpn_dedicated_ip_user_88:NordVault339",
-    warrantyUntil: "Nov 09, 2026",
-  },
-  {
-    id: "#ORD-9815",
-    product: "Discord Nitro 3 Months Promo Link",
-    category: "Gaming",
-    buyer: "Michael Brown",
-    buyerEmail: "mike.b@gmail.com",
-    amount: "$4.50",
-    date: "Oct 08, 2026",
-    status: "disputed",
-    credentials: "https://discord.com/billing/promotions/unclaimed-token-xxx",
-    warrantyUntil: "Oct 15, 2026",
-  },
-];
-
 export default function SellerOrdersPage() {
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
+  const { data: ordersData, isLoading } = useGetSellerOrdersQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+  const rawOrders = useMemo(() => {
+    return Array.isArray(ordersData?.data?.orders)
+      ? ordersData.data.orders
+      : Array.isArray(ordersData?.data)
+      ? ordersData.data
+      : [];
+  }, [ordersData]);
+
+  const formattedOrders = useMemo(() => {
+    return rawOrders.map((order) => {
+      const credString = Array.isArray(order.deliveredCredentials)
+        ? order.deliveredCredentials.map((c) => c.credential || c).join("\n")
+        : order.deliveredCredentials || "";
+      const orderIdStr = order.orderNumber || `#ORD-${String(order._id || order.id).slice(-6)}`;
+      const formattedDate = order.createdAt
+        ? new Date(order.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "Recent";
+
+      return {
+        id: orderIdStr,
+        rawId: order._id || order.id,
+        product: order.productTitle || order.product?.title || "Digital Product",
+        category: order.product?.category?.name || "Digital Account",
+        buyer: order.buyer?.fullName || order.buyer?.username || "Verified Buyer",
+        buyerEmail: order.buyer?.email || "buyer@acczora.com",
+        amount: `$${Number(order.totalAmount || 0).toFixed(2)}`,
+        date: formattedDate,
+        status: order.status || "completed",
+        credentials: credString,
+        warrantyUntil: "Active Guarantee",
+      };
+    });
+  }, [rawOrders]);
+
   // Filter orders
-  const filteredOrders = DEMO_ORDERS.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.buyer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.buyerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredOrders = useMemo(() => {
+    return formattedOrders.filter((order) => {
+      const matchesSearch =
+        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.buyer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.buyerEmail.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === "all" || order.status.toLowerCase() === statusFilter.toLowerCase();
+      const matchesStatus =
+        statusFilter === "all" || order.status.toLowerCase() === statusFilter.toLowerCase();
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [formattedOrders, searchTerm, statusFilter]);
 
   const totalItems = filteredOrders.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const paginatedOrders = useMemo(() => {
+    return filteredOrders.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [filteredOrders, currentPage, pageSize]);
 
   return (
     <div className="space-y-6">
@@ -192,7 +168,12 @@ export default function SellerOrdersPage() {
 
       {/* Orders Table */}
       <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        {paginatedOrders.length === 0 ? (
+        {isLoading ? (
+          <div className="py-20 text-center space-y-3">
+            <Loader2 className="w-8 h-8 text-brand animate-spin mx-auto" />
+            <p className="text-xs text-gray-400">Loading order deliveries...</p>
+          </div>
+        ) : paginatedOrders.length === 0 ? (
           <EmptyState
             title="No orders found"
             description="No orders match your search or filter criteria."

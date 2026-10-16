@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { StarIcon, StarOutlineIcon } from "@/icons";
+import { getSafeImageSrc } from "@/utils/imageUtils";
 
 export default function ProductReviews({ reviewsData }) {
   if (!reviewsData) return null;
@@ -104,17 +105,15 @@ export default function ProductReviews({ reviewsData }) {
             >
               {/* Reviewer Profile */}
               <div className="flex items-center gap-3 sm:w-52 shrink-0">
-                {review.avatar && (
-                  <div className="relative size-12 rounded-[10px] overflow-hidden bg-gray-100 shrink-0 border border-gray-100 shadow-2xs">
-                    <Image
-                      src={review.avatar}
-                      alt={review.author || "Reviewer"}
-                      fill
-                      sizes="48px"
-                      className="object-cover"
-                    />
-                  </div>
-                )}
+                <div className="relative size-12 rounded-[10px] overflow-hidden bg-gray-100 shrink-0 border border-gray-100 shadow-2xs">
+                  <Image
+                    src={getSafeImageSrc(review.avatar, "/review_avater.jpg")}
+                    alt={review.author || "Reviewer"}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
                 <div>
                   <p className="text-sm font-semibold text-primary">
                     {review.author}

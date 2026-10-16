@@ -4,13 +4,57 @@ import { Check } from "lucide-react";
 import { H2, H4 } from "@/components/ui/Typography";
 
 export default function ProductAbout({ product }) {
-  const {
-    descriptionParagraphs = [],
-    whatsIncluded = [],
-    productDetails = [],
-    deliveryInfo = {},
-    buyerProtection = [],
-  } = product || {};
+  const descriptionParagraphs =
+    Array.isArray(product?.descriptionParagraphs) &&
+    product.descriptionParagraphs.length > 0
+      ? product.descriptionParagraphs
+      : [
+          product?.description ||
+            product?.short_description ||
+            "High quality verified digital product with instant automated delivery.",
+        ];
+
+  const whatsIncluded =
+    Array.isArray(product?.whatsIncluded) && product.whatsIncluded.length > 0
+      ? product.whatsIncluded
+      : Array.isArray(product?.features) && product.features.length > 0
+      ? product.features
+      : [
+          "Full Account Credentials",
+          "Clean History & Verified",
+          "Automated Instant Delivery",
+          "Buyer Protection Guarantee",
+        ];
+
+  const categoryName =
+    typeof product?.category === "object"
+      ? product?.category?.name
+      : product?.categoryName || product?.category || "Digital Account";
+
+  const productDetails =
+    Array.isArray(product?.productDetails) && product.productDetails.length > 0
+      ? product.productDetails
+      : [
+          { label: "Category", value: categoryName },
+          { label: "Brand", value: product?.brand || "Verified" },
+          { label: "Region", value: product?.region || "Global" },
+          { label: "Stock", value: `${product?.stock ?? 1} Available` },
+        ];
+
+  const deliveryInfo = product?.deliveryInfo || {
+    title: "Instant Auto-Delivery",
+    description:
+      "Credentials are automatically delivered to your purchases dashboard immediately upon order completion.",
+  };
+
+  const buyerProtection =
+    Array.isArray(product?.buyerProtection) && product.buyerProtection.length > 0
+      ? product.buyerProtection
+      : [
+          { label: "Protection", value: "Escrow Guarantee" },
+          { label: "Support", value: "24/7 Verified Support" },
+          { label: "Replacement", value: "Guaranteed Valid" },
+        ];
 
   return (
     <section className="mt-12 sm:mt-16 pt-10 border-t border-[#F0F2F5]">

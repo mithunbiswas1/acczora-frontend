@@ -6,6 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
+import { Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useLoginMutation } from "@/redux/api/authApi";
 import { setLogin } from "@/redux/slice/authSlice";
@@ -26,6 +27,7 @@ export default function LoginPage() {
   });
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
+  const [pendingApprovalMsg, setPendingApprovalMsg] = useState("");
 
   const [login, { isLoading }] = useLoginMutation();
 
@@ -34,6 +36,9 @@ export default function LoginPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+    if (pendingApprovalMsg) {
+      setPendingApprovalMsg("");
     }
   };
 
@@ -108,12 +113,16 @@ export default function LoginPage() {
       if (err?.status === "FETCH_ERROR" || err?.error?.includes?.("fetch")) {
         toast.error("Cannot connect to backend server at http://localhost:8005. Please ensure backend is running!");
       } else {
-        toast.error(
+        const message =
           err?.data?.message ||
           err?.data?.errors?.[0] ||
           err?.message ||
-          "Login failed. Please check your credentials.",
-        );
+          "Login failed. Please check your credentials.";
+
+        if (err?.status === 403 || message.toLowerCase().includes("pending")) {
+          setPendingApprovalMsg(message);
+        }
+        toast.error(message);
       }
     }
   };
@@ -127,6 +136,16 @@ export default function LoginPage() {
       title="Welcome Back"
       subtitle="Access your verified accounts and digital products all in one place."
     >
+      {pendingApprovalMsg && (
+        <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5 animate-in fade-in">
+          <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+          <div className="space-y-0.5">
+            <p className="font-bold text-amber-900">Account Pending Admin Approval</p>
+            <p className="text-amber-700 leading-relaxed">{pendingApprovalMsg}</p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthInput
           label="Email Address"

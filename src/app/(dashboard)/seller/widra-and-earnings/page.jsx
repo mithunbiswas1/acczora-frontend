@@ -2,7 +2,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { useGetMyPointsQuery, useGetSellerOrdersQuery } from "@/redux/api/orderApi";
 import {
   Wallet,
   ArrowDownToLine,
@@ -134,6 +136,10 @@ const MONTHLY_STATEMENTS = [
 ];
 
 export default function SellerWithdrawalsAndEarningsPage() {
+  const { user, isLoggedIn } = useSelector((state) => state.auth || {});
+  const { data: myPointsRes } = useGetMyPointsQuery(undefined, { skip: !isLoggedIn });
+  const { data: ordersData } = useGetSellerOrdersQuery(undefined, { skip: !isLoggedIn });
+
   const [activeTab, setActiveTab] = useState("withdrawals"); // 'withdrawals' | 'earnings'
   const [withdrawals, setWithdrawals] = useState(DEMO_WITHDRAWALS);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -151,13 +157,31 @@ export default function SellerWithdrawalsAndEarningsPage() {
     destination: "",
   });
 
-  const availableBalance = 2480.0;
+  const availableBalance = Number(
+    myPointsRes?.data?.points ?? user?.points ?? 0
+  );
+
+  const rawOrders = useMemo(() => {
+    return Array.isArray(ordersData?.data?.orders)
+      ? ordersData.data.orders
+      : Array.isArray(ordersData?.data)
+      ? ordersData.data
+      : [];
+  }, [ordersData]);
+
+  const lifetimeEarnings = useMemo(() => {
+    const ordersTotal = rawOrders.reduce(
+      (sum, o) => sum + (Number(o.totalAmount) || 0),
+      0
+    );
+    return Math.max(ordersTotal, availableBalance);
+  }, [rawOrders, availableBalance]);
 
   const handleWithdrawSubmit = (e) => {
     e.preventDefault();
     const amountNum = parseFloat(withdrawForm.amount);
-    if (!amountNum || amountNum < 20) {
-      toast.error("Minimum withdrawal amount is $20.00");
+    if (!amountNum || amountNum < 5) {
+      toast.error("Minimum withdrawal amount is $5.00");
       return;
     }
     if (amountNum > availableBalance) {
@@ -241,9 +265,9 @@ export default function SellerWithdrawalsAndEarningsPage() {
         />
         <StatCard
           title="Total Lifetime Earnings"
-          value="$14,440.00"
+          value={`$${lifetimeEarnings.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
           icon={ArrowUpRight}
-          trend="+18.4% from last month"
+          trend={`${rawOrders.length} orders delivered`}
           trendDirection="up"
         />
         <StatCard

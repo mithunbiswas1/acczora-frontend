@@ -19,6 +19,7 @@ export default function ProductResults({
   sort,
   onSortChange,
   onClearFilters,
+  isLoading = false,
 }) {
   const hasQuery = query.trim().length > 0;
   const isNoResults = results.length === 0;
@@ -55,7 +56,9 @@ export default function ProductResults({
                 </span>
               </span>
             ) : (
-              <span>24,680 Products</span>
+              <span>
+                {totalCount.toLocaleString()} Product{totalCount === 1 ? "" : "s"}
+              </span>
             )}
           </div>
 
@@ -104,13 +107,22 @@ export default function ProductResults({
       </div>
 
       {/* Results or Empty State */}
-      {results.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5 xl:gap-6">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="h-[380px] rounded-[12px] bg-gray-100 dark:bg-gray-800 animate-pulse border border-border"
+            />
+          ))}
+        </div>
+      ) : results.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5 xl:gap-6">
           {results.map((product) => (
             <ProductCard
-              key={product.id}
+              key={product._id || product.id || product.slug}
               product={product}
-              href={`/product/${product.slug || product.id}`}
+              href={`/product/${product.slug || product._id || product.id}`}
             />
           ))}
         </div>

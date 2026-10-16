@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Loader2,
   FileText,
+  ShieldCheck,
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import {
@@ -137,19 +138,26 @@ export default function ProductForm({
       : ""
   );
 
-  // Uploaded Info (Credentials / Accounts array)
-  // Format: { email: "", password: "", recoveryEmail: "", twoFactor: "" }
+  // Sold accounts preserved separately so they are never overwritten or lost during editing
+  const [soldAccounts, setSoldAccounts] = useState(
+    Array.isArray(initialData.uploadedInfo)
+      ? initialData.uploadedInfo.filter((r) => r.isSold === true)
+      : []
+  );
+
+  // Uploaded Info (Unsold credentials / Accounts editable by seller)
   const [credentials, setCredentials] = useState(
-    initialData.uploadedInfo && initialData.uploadedInfo.length > 0
-      ? initialData.uploadedInfo.map((row) => ({
-        email: row.email || row.account || "",
-        password: row.password || row.pass || "",
-        recoveryEmail: row.recoveryEmail || row.recoverEmail || row.password2 || "",
-        twoFactor: row.twoFactor || row.two_factor || row.pin || "",
-      }))
-      : [
-        { email: "", password: "", recoveryEmail: "", twoFactor: "" },
-      ]
+    Array.isArray(initialData.uploadedInfo) && initialData.uploadedInfo.length > 0
+      ? initialData.uploadedInfo
+          .filter((row) => row.isSold !== true)
+          .map((row) => ({
+            _id: row._id,
+            email: row.email || row.account || "",
+            password: row.password || row.pass || "",
+            recoveryEmail: row.recoveryEmail || row.recoverEmail || row.password2 || "",
+            twoFactor: row.twoFactor || row.two_factor || row.pin || "",
+          }))
+      : [{ email: "", password: "", recoveryEmail: "", twoFactor: "" }]
   );
 
   // Sync state if initialData arrives asynchronously in edit mode
@@ -172,15 +180,23 @@ export default function ProductForm({
       }
       if (initialData.price !== undefined) setPrice(String(initialData.price));
       if (initialData.salePrice !== undefined) setDiscount(String(initialData.salePrice));
-      if (initialData.uploadedInfo && initialData.uploadedInfo.length > 0) {
-        setCredentials(
-          initialData.uploadedInfo.map((row) => ({
-            email: row.email || row.account || "",
-            password: row.password || row.pass || "",
-            recoveryEmail: row.recoveryEmail || row.recoverEmail || row.password2 || "",
-            twoFactor: row.twoFactor || row.two_factor || row.pin || "",
-          }))
-        );
+      if (Array.isArray(initialData.uploadedInfo) && initialData.uploadedInfo.length > 0) {
+        const sold = initialData.uploadedInfo.filter((r) => r.isSold === true);
+        const available = initialData.uploadedInfo.filter((r) => r.isSold !== true);
+        setSoldAccounts(sold);
+        if (available.length > 0) {
+          setCredentials(
+            available.map((row) => ({
+              _id: row._id,
+              email: row.email || row.account || "",
+              password: row.password || row.pass || "",
+              recoveryEmail: row.recoveryEmail || row.recoverEmail || row.password2 || "",
+              twoFactor: row.twoFactor || row.two_factor || row.pin || "",
+            }))
+          );
+        } else {
+          setCredentials([{ email: "", password: "", recoveryEmail: "", twoFactor: "" }]);
+        }
       }
     }
   }, [initialData]);
@@ -316,6 +332,12 @@ export default function ProductForm({
       (c) => c.email?.trim() || c.password?.trim()
     );
 
+    // Merge unsold credentials with preserved sold accounts in edit mode
+    const allCredentials =
+      mode === "edit"
+        ? [...soldAccounts, ...validCredentials]
+        : validCredentials;
+
     const payload = {
       title: title.trim(),
       category: categoryId || undefined,
@@ -327,13 +349,13 @@ export default function ProductForm({
       tags: tags,
       price: Number(price),
       salePrice: discount ? Number(discount) : 0,
-      stock: validCredentials.length > 0 ? validCredentials.length : 1,
+      stock: validCredentials.length,
       media: mediaImages.map((m) => (typeof m === "string" ? m : m.name)),
       thumbnail:
         typeof mediaImages[0] === "string"
           ? mediaImages[0]
           : "/product_demo_image.jpg",
-      uploadedInfo: validCredentials,
+      uploadedInfo: allCredentials,
       status: submitStatus,
       is_active: submitStatus === "active",
     };
@@ -637,9 +659,28 @@ export default function ProductForm({
 
         {/* Uploaded Info Credentials Section */}
         <div className="pt-2 space-y-3">
+          {soldAccounts.length > 0 && (
+            <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl text-xs text-blue-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-blue-600 flex-shrink-0" />
+                <span>
+                  <strong>{soldAccounts.length} sold account(s)</strong> are locked and hidden to protect buyer delivery. Only available inventory is editable below.
+                </span>
+              </div>
+              {productId && (
+                <Link
+                  href={`${basePath}/view/${productId}`}
+                  className="font-semibold underline hover:text-blue-900 ml-2 flex-shrink-0 text-[11px]"
+                >
+                  View All
+                </Link>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-900 tracking-tight">
-              Uploaded Info ({credentials.length} items)
+              Available Inventory ({credentials.length} items)
             </span>
             <span className="text-[11px] text-gray-400">
               Auto-delivered to buyer upon purchase

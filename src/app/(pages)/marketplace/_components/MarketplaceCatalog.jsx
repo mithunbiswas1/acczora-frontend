@@ -9,14 +9,16 @@ import SearchAndCategories from "./SearchAndCategories";
 import FilterSidebar from "./FilterSidebar";
 import ProductResults from "./ProductResults";
 import {
-  products,
-  categories,
+  products as fallbackProducts,
+  categories as fallbackCategories,
   priceRanges,
   ratingOptions,
   sellerOptions,
   deliveryOptions,
   availabilityOptions,
 } from "@/data";
+import { useGetAllProductsQuery } from "@/redux/api/productApi";
+import { useGetAllCategoriesActiveQuery } from "@/redux/api/categoryApi";
 
 function toggleValue(list, value) {
   return list.includes(value)
@@ -27,6 +29,42 @@ function toggleValue(list, value) {
 export default function MarketplaceCatalog() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
+
+  // Live queries
+  const { data: apiProductsResponse, isLoading: isLoadingProducts } =
+    useGetAllProductsQuery({
+      limit: 100,
+      is_active: "true",
+    });
+  const { data: apiCategoriesResponse } = useGetAllCategoriesActiveQuery();
+
+  const categories = useMemo(() => {
+    const rawList =
+      apiCategoriesResponse?.data?.categories ||
+      apiCategoriesResponse?.data ||
+      [];
+    if (Array.isArray(rawList) && rawList.length > 0) {
+      return rawList.map((c) => ({
+        ...c,
+        id: c._id || c.id,
+        name: c.name,
+        slug: c.slug,
+        subcategories: Array.isArray(c.subcategories) ? c.subcategories : [],
+      }));
+    }
+    return fallbackCategories;
+  }, [apiCategoriesResponse]);
+
+  const allProducts = useMemo(() => {
+    const rawList =
+      apiProductsResponse?.data?.products ||
+      apiProductsResponse?.data ||
+      [];
+    if (Array.isArray(rawList) && rawList.length > 0) {
+      return rawList;
+    }
+    return fallbackProducts;
+  }, [apiProductsResponse]);
 
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -45,30 +83,32 @@ export default function MarketplaceCatalog() {
 
   // Sync category param from URL query
   useEffect(() => {
-    if (categoryParam) {
+    if (categoryParam && categories.length > 0) {
       const decoded = decodeURIComponent(categoryParam).trim().toLowerCase();
       const matchedCategory = categories.find(
         (c) =>
-          c.name.toLowerCase() === decoded ||
-          c.name.toLowerCase().replace(/[^a-z0-9]/g, "-") === decoded ||
-          c.name.toLowerCase().replace(/&/g, "and") === decoded,
+          c.name?.toLowerCase() === decoded ||
+          c.slug?.toLowerCase() === decoded ||
+          c.name?.toLowerCase().replace(/[^a-z0-9]/g, "-") === decoded ||
+          c.name?.toLowerCase().replace(/&/g, "and") === decoded
       );
 
       if (matchedCategory) {
         setActiveCategories([matchedCategory.name]);
         if (matchedCategory.subcategories?.length > 0) {
-          const subIds = matchedCategory.subcategories.map((s) => s.id);
+          const subIds = matchedCategory.subcategories.map(
+            (s) => s._id || s.id
+          );
           setActiveSubcategories(subIds);
         }
       }
     }
-  }, [categoryParam]);
+  }, [categoryParam, categories]);
 
   const debouncedQuery = useDebounce(query, 300);
 
   const activeFilterCount =
     activeCategories.length +
-
     activePriceRanges.length +
     (customMin || customMax ? 1 : 0) +
     activeRatings.length +
@@ -81,19 +121,23 @@ export default function MarketplaceCatalog() {
     const categoryObj = categories.find((c) => c.name === categoryName);
 
     if (isCurrentlyActive) {
-      // Unselect category -> unselect all its subcategories
-      setActiveCategories((prev) => prev.filter((name) => name !== categoryName));
+      setActiveCategories((prev) =>
+        prev.filter((name) => name !== categoryName)
+      );
       if (categoryObj?.subcategories?.length > 0) {
-        const subIdsToRemove = categoryObj.subcategories.map((s) => s.id);
+        const subIdsToRemove = categoryObj.subcategories.map(
+          (s) => s._id || s.id
+        );
         setActiveSubcategories((prev) =>
           prev.filter((id) => !subIdsToRemove.includes(id))
         );
       }
     } else {
-      // Select category -> default select all its subcategories
       setActiveCategories((prev) => [...prev, categoryName]);
       if (categoryObj?.subcategories?.length > 0) {
-        const subIdsToAdd = categoryObj.subcategories.map((s) => s.id);
+        const subIdsToAdd = categoryObj.subcategories.map(
+          (s) => s._id || s.id
+        );
         setActiveSubcategories((prev) => {
           const set = new Set([...prev, ...subIdsToAdd]);
           return Array.from(set);
@@ -105,7 +149,7 @@ export default function MarketplaceCatalog() {
   function handleToggleSubcategory(subId) {
     const isCurrentlyActive = activeSubcategories.includes(subId);
     const parentCategory = categories.find((cat) =>
-      cat.subcategories?.some((sub) => sub.id === subId)
+      cat.subcategories?.some((sub) => (sub._id || sub.id) === subId)
     );
 
     if (isCurrentlyActive) {
@@ -114,7 +158,9 @@ export default function MarketplaceCatalog() {
 
       if (parentCategory) {
         const hasOtherSubActive = parentCategory.subcategories.some(
-          (sub) => sub.id !== subId && newActiveSubs.includes(sub.id)
+          (sub) =>
+            (sub._id || sub.id) !== subId &&
+            newActiveSubs.includes(sub._id || sub.id)
         );
         if (!hasOtherSubActive) {
           setActiveCategories((prev) =>
@@ -131,101 +177,127 @@ export default function MarketplaceCatalog() {
   }
 
   const results = useMemo(() => {
-    let list = products;
+    let list = allProducts;
 
     const q = debouncedQuery.trim().toLowerCase();
     if (q) {
-      list = list.filter(
-        (product) =>
-          product.title.toLowerCase().includes(q) ||
-          product.category.toLowerCase().includes(q),
-      );
+      list = list.filter((product) => {
+        const prodTitle = product.title || "";
+        const prodCat =
+          typeof product.category === "object"
+            ? product.category?.name || ""
+            : product.categoryName || product.category || "";
+        return (
+          prodTitle.toLowerCase().includes(q) ||
+          prodCat.toLowerCase().includes(q)
+        );
+      });
     }
 
     if (activeCategories.length > 0 || activeSubcategories.length > 0) {
-      const activeSubcategoryPairs = activeSubcategories
-        .map((subId) => {
-          for (const category of categories) {
-            const sub = category.subcategories?.find((item) => item.id === subId);
-            if (sub) return { categoryName: category.name, subName: sub.name };
-          }
-          return null;
-        })
-        .filter(Boolean);
-
-      const categoriesWithActiveSubs = new Set(
-        activeSubcategoryPairs.map((p) => p.categoryName),
-      );
-
       list = list.filter((product) => {
-        if (categoriesWithActiveSubs.has(product.category)) {
-          return activeSubcategoryPairs.some(
-            (p) => p.categoryName === product.category && p.subName === product.subcategory,
-          );
-        }
-        return activeCategories.includes(product.category);
+        const prodCat =
+          typeof product.category === "object"
+            ? product.category?.name || ""
+            : product.categoryName || product.category || "";
+        const prodSlug =
+          typeof product.category === "object" ? product.category?.slug : "";
+
+        return (
+          activeCategories.includes(prodCat) ||
+          activeCategories.includes(prodSlug)
+        );
       });
     }
 
     if (activePriceRanges.length > 0) {
-      list = list.filter((product) =>
-        activePriceRanges.some((rangeId) => {
+      list = list.filter((product) => {
+        const regularPrice = Number(product.price || 0);
+        const salePrice = Number(product.salePrice || product.discountPrice || 0);
+        const price =
+          salePrice > 0 && salePrice < regularPrice ? salePrice : regularPrice;
+        return activePriceRanges.some((rangeId) => {
           const range = priceRanges.find((item) => item.id === rangeId);
-          return range && product.price >= range.min && product.price <= range.max;
-        }),
-      );
+          return range && price >= range.min && price <= range.max;
+        });
+      });
     }
 
     if (customMin !== "" || customMax !== "") {
       const min = customMin !== "" ? parseFloat(customMin) : 0;
       const max = customMax !== "" ? parseFloat(customMax) : Infinity;
       if (!isNaN(min) && !isNaN(max)) {
-        list = list.filter((product) => product.price >= min && product.price <= max);
+        list = list.filter((product) => {
+          const regularPrice = Number(product.price || 0);
+          const salePrice = Number(product.salePrice || product.discountPrice || 0);
+          const price =
+            salePrice > 0 && salePrice < regularPrice ? salePrice : regularPrice;
+          return price >= min && price <= max;
+        });
       }
     }
 
     if (activeRatings.length > 0) {
-      list = list.filter((product) =>
-        activeRatings.some((ratingId) => {
-          const rating = ratingOptions.find((item) => item.id === ratingId);
-          return rating && parseFloat(product.seller.rating) >= rating.min;
-        }),
-      );
+      list = list.filter((product) => {
+        const rating = parseFloat(
+          product.seller?.rating || product.rating || 5
+        );
+        return activeRatings.some((ratingId) => {
+          const ratingOpt = ratingOptions.find((item) => item.id === ratingId);
+          return ratingOpt && rating >= ratingOpt.min;
+        });
+      });
     }
 
     if (activeSellers.length > 0) {
       list = list.filter((product) =>
         activeSellers.some((sellerId) => {
-          if (sellerId === "verified") return product.seller.verified;
-          if (sellerId === "top") return product.isBestSeller;
+          if (sellerId === "verified") return true;
+          if (sellerId === "top") return Boolean(product.isBestSeller);
           return false;
-        }),
+        })
       );
     }
 
     if (activeDelivery.length > 0) {
       list = list.filter((product) =>
-        activeDelivery.some((deliveryId) => deliveryId === "instant" && product.instantDelivery),
+        activeDelivery.some(
+          (deliveryId) => deliveryId === "instant" && (product.instantDelivery ?? true)
+        )
       );
     }
 
     if (activeAvailability.length > 0) {
-      list = list.filter((product) =>
-        activeAvailability.some(
+      list = list.filter((product) => {
+        const isInStock =
+          product.inStock !== undefined
+            ? Boolean(product.inStock)
+            : (product.stock ?? 0) > 0;
+        return activeAvailability.some(
           (availabilityId) =>
-            (availabilityId === "in-stock" || availabilityId === "available-now") &&
-            product.inStock,
-        ),
-      );
+            (availabilityId === "in-stock" ||
+              availabilityId === "available-now") &&
+            isInStock
+        );
+      });
     }
 
     const sorted = [...list];
-    if (sort === "price-asc") sorted.sort((a, b) => a.price - b.price);
-    if (sort === "price-desc") sorted.sort((a, b) => b.price - a.price);
-    if (sort === "newest") sorted.reverse();
+    if (sort === "price-asc") {
+      sorted.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+    }
+    if (sort === "price-desc") {
+      sorted.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+    }
+    if (sort === "newest") {
+      sorted.sort(
+        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+      );
+    }
 
     return sorted;
   }, [
+    allProducts,
     debouncedQuery,
     activeCategories,
     activeSubcategories,
@@ -279,23 +351,33 @@ export default function MarketplaceCatalog() {
               onToggleSubcategory={handleToggleSubcategory}
               priceRanges={priceRanges}
               activePriceRanges={activePriceRanges}
-              onTogglePriceRange={(id) => setActivePriceRanges((prev) => toggleValue(prev, id))}
+              onTogglePriceRange={(id) =>
+                setActivePriceRanges((prev) => toggleValue(prev, id))
+              }
               customMin={customMin}
               customMax={customMax}
               onCustomMinChange={setCustomMin}
               onCustomMaxChange={setCustomMax}
               ratingOptions={ratingOptions}
               activeRatings={activeRatings}
-              onToggleRating={(id) => setActiveRatings((prev) => toggleValue(prev, id))}
+              onToggleRating={(id) =>
+                setActiveRatings((prev) => toggleValue(prev, id))
+              }
               sellerOptions={sellerOptions}
               activeSellers={activeSellers}
-              onToggleSeller={(id) => setActiveSellers((prev) => toggleValue(prev, id))}
+              onToggleSeller={(id) =>
+                setActiveSellers((prev) => toggleValue(prev, id))
+              }
               deliveryOptions={deliveryOptions}
               activeDelivery={activeDelivery}
-              onToggleDelivery={(id) => setActiveDelivery((prev) => toggleValue(prev, id))}
+              onToggleDelivery={(id) =>
+                setActiveDelivery((prev) => toggleValue(prev, id))
+              }
               availabilityOptions={availabilityOptions}
               activeAvailability={activeAvailability}
-              onToggleAvailability={(id) => setActiveAvailability((prev) => toggleValue(prev, id))}
+              onToggleAvailability={(id) =>
+                setActiveAvailability((prev) => toggleValue(prev, id))
+              }
               activeFilterCount={activeFilterCount}
               onClearAll={clearAllFilters}
               onClose={() => setShowFilters(false)}
@@ -305,13 +387,14 @@ export default function MarketplaceCatalog() {
           <ProductResults
             query={debouncedQuery}
             results={results}
-            totalCount={products.length}
+            totalCount={allProducts.length}
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters((prev) => !prev)}
             activeFilterCount={activeFilterCount}
             sort={sort}
             onSortChange={setSort}
             onClearFilters={clearAllFilters}
+            isLoading={isLoadingProducts}
           />
         </div>
       </div>

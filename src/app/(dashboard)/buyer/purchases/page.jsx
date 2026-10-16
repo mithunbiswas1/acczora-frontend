@@ -2,10 +2,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  Search,
   Eye,
   Download,
   Copy,
@@ -14,7 +13,12 @@ import {
   AlertCircle,
   ExternalLink,
   Store,
+  Star,
+  MessageSquare,
+  Loader2,
+  Clock,
 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import {
   Table,
   TableHeader,
@@ -33,316 +37,456 @@ import EmptyState from "@/components/ui/EmptyState";
 import CredentialViewer from "@/components/ui/CredentialViewer";
 import { Button } from "@/components/ui/Button";
 import LinkButton from "@/components/ui/LinkButton";
-import { Typography, H3, P, Caption } from "@/components/ui/Typography";
+import Textarea from "@/components/ui/Textarea";
+import { useGetBuyerOrdersQuery } from "@/redux/api/orderApi";
+import {
+  useGetBuyerReviewsQuery,
+  useCreateReviewMutation,
+} from "@/redux/api/reviewApi";
 import { toast } from "sonner";
 
-const BUYER_PURCHASES_DATA = [
-  {
-    id: "#ORD-9821",
-    product: "Netflix Premium UHD 4K (1 Month)",
-    category: "Streaming",
-    seller: "NovaStore",
-    sellerEmail: "seller@acczora.com",
-    price: "$14.50",
-    date: "Oct 12, 2026",
-    warrantyUntil: "Nov 12, 2026",
-    status: "active",
-    credentials: "alex_netf_user@netflix.com:SecretStream992",
-    instructions: "Login on netflix.com. Use Profile 3 (Alex). Do not change password.",
-  },
-  {
-    id: "#ORD-9820",
-    product: "Canva Pro Educational (1 Year)",
-    category: "Design",
-    seller: "NovaStore",
-    sellerEmail: "seller@acczora.com",
-    price: "$9.00",
-    date: "Oct 11, 2026",
-    warrantyUntil: "Oct 11, 2027",
-    status: "active",
-    credentials: "https://www.canva.com/brand/join?token=xYz789_edu_invitation",
-    instructions: "Click the invitation link while logged into your personal Canva account.",
-  },
-  {
-    id: "#ORD-9818",
-    product: "Spotify Family Slot (6 Months)",
-    category: "Music",
-    seller: "DigitalVault BD",
-    sellerEmail: "support@digitalvault.io",
-    price: "$7.50",
-    date: "Oct 10, 2026",
-    warrantyUntil: "Apr 10, 2027",
-    status: "active",
-    credentials: "spotify_family_invite@music.org:Sp0t1fyFam99|Address: 124 Main St, London",
-    instructions: "Accept family invitation using provided UK address.",
-  },
-  {
-    id: "#ORD-9810",
-    product: "ChatGPT Plus Shared 1-Profile",
-    category: "AI Tools",
-    seller: "AI Accounts Global",
-    sellerEmail: "sales@aiaccounts.net",
-    price: "$12.00",
-    date: "Sep 28, 2026",
-    warrantyUntil: "Oct 28, 2026",
-    status: "active",
-    credentials: "chat_pro_share11@openai-team.com:PlusPass7721",
-    instructions: "Log in with email and password. Use 2FA code if prompted.",
-  },
-  {
-    id: "#ORD-9799",
-    product: "NordVPN Dedicated IP (2 Years)",
-    category: "VPN",
-    seller: "CyberSafe Store",
-    sellerEmail: "contact@cybersafe.org",
-    price: "$22.00",
-    date: "Aug 15, 2026",
-    warrantyUntil: "Sep 15, 2026 (Expired)",
-    status: "expired",
-    credentials: "vpn_dedicated_ip_user_88:NordVault339",
-    instructions: "Login on NordVPN app and connect to London dedicated IP #4.",
-  },
+const STATUS_FILTER_OPTIONS = [
+  { label: "All Status", value: "all" },
+  { label: "Completed", value: "completed" },
+  { label: "Processing", value: "processing" },
 ];
 
 export default function BuyerPurchasesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const { data: ordersData, isLoading: isLoadingOrders } =
+    useGetBuyerOrdersQuery();
+  const { data: reviewsData } = useGetBuyerReviewsQuery();
+  const [createReview, { isLoading: isSubmittingReview }] =
+    useCreateReviewMutation();
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
 
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isViewerModalOpen, setIsViewerModalOpen] = useState(false);
+  // Modals
+  const [selectedOrderForCredentials, setSelectedOrderForCredentials] =
+    useState(null);
+  const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
 
-  const filteredPurchases = BUYER_PURCHASES_DATA.filter((item) => {
-    const matchesSearch =
-      item.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.seller.toLowerCase().includes(searchTerm.toLowerCase());
+  // Review Form State
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState("");
 
-    const matchesCategory =
-      categoryFilter === "all" || item.category.toLowerCase() === categoryFilter.toLowerCase();
+  const orders = useMemo(() => {
+    return Array.isArray(ordersData?.data?.orders)
+      ? ordersData.data.orders
+      : Array.isArray(ordersData?.data)
+      ? ordersData.data
+      : [];
+  }, [ordersData]);
 
-    return matchesSearch && matchesCategory;
-  });
+  const reviews = useMemo(() => {
+    return Array.isArray(reviewsData?.data?.reviews)
+      ? reviewsData.data.reviews
+      : Array.isArray(reviewsData?.data)
+      ? reviewsData.data
+      : [];
+  }, [reviewsData]);
 
-  const totalItems = filteredPurchases.length;
+  // Map orderId -> review object
+  const reviewMap = useMemo(() => {
+    const map = {};
+    reviews.forEach((r) => {
+      const orderId = r.order?._id || r.order;
+      if (orderId) {
+        map[orderId.toString()] = r;
+      }
+    });
+    return map;
+  }, [reviews]);
+
+  // Filtering
+  const filteredOrders = useMemo(() => {
+    return orders.filter((item) => {
+      if (statusFilter !== "all" && item.status !== statusFilter) return false;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const matchesTitle = item.productTitle?.toLowerCase().includes(q);
+        const matchesNumber = item.orderNumber?.toLowerCase().includes(q);
+        const matchesSeller =
+          item.seller?.shopName?.toLowerCase().includes(q) ||
+          item.seller?.fullName?.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesNumber && !matchesSeller) return false;
+      }
+      return true;
+    });
+  }, [orders, statusFilter, search]);
+
+  // Pagination
+  const totalItems = filteredOrders.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
-  const paginated = filteredPurchases.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredOrders.slice(start, start + pageSize);
+  }, [filteredOrders, currentPage, pageSize]);
 
-  const getCategoryName = (cat) => {
-    if (!cat) return "";
-    if (typeof cat === "string") return cat;
-    return cat.name || cat.title || cat.label || cat._id || "";
+  const handleOpenReviewModal = (order) => {
+    setSelectedOrderForReview(order);
+    setRating(5);
+    setComment("");
   };
 
-  const categories = [
-    "all",
-    ...Array.from(
-      new Set(
-        BUYER_PURCHASES_DATA.map((p) => getCategoryName(p.category)).filter(Boolean)
-      )
-    ),
-  ];
+  const handleCloseReviewModal = () => {
+    setSelectedOrderForReview(null);
+    setRating(5);
+    setComment("");
+  };
 
-  const categoryOptions = categories.map((c) => ({
-    label: c === "all" ? "All Categories" : c,
-    value: c,
-  }));
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!comment.trim()) {
+      toast.error("Please write a short review comment");
+      return;
+    }
+
+    try {
+      const productId =
+        selectedOrderForReview.product?._id || selectedOrderForReview.product;
+
+      await createReview({
+        productId,
+        orderId: selectedOrderForReview._id || selectedOrderForReview.id,
+        rating,
+        comment: comment.trim(),
+      }).unwrap();
+
+      toast.success(
+        "Review submitted! It is pending admin approval and visible in your dashboard."
+      );
+      handleCloseReviewModal();
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to submit review");
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border">
-        <div>
-          <H3 className="text-xl font-bold text-gray-900">My Purchased Accounts & Keys</H3>
-          <P className="text-xs text-gray-500 mt-1">
-            Access your delivered logins, copy credentials, download backup files, and track replacement warranties.
-          </P>
-        </div>
-        <LinkButton
-          href="/"
-          variant="brand"
-          size="sm"
-          rounded="xl"
-        >
-          Buy More Accounts
-        </LinkButton>
-      </div>
+    <div className="space-y-6 pb-16">
+      {/* Page Header */}
+      <PageHeader
+        title="My Purchases & Orders"
+        description="View your digital account credentials, automated deliveries, and order receipts."
+      />
 
-      {/* Search & Filters */}
-      <div className="bg-white p-4 rounded-2xl border border-border flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="w-full md:w-80">
+      {/* Outside Search & Filters Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="w-full sm:w-80">
           <SearchInput
-            placeholder="Search by product, order ID, or seller..."
-            value={searchTerm}
+            placeholder="Search by order #, product, or seller..."
+            value={search}
             onChange={(e) => {
-              setSearchTerm(e.target.value);
+              setSearch(e.target.value);
               setCurrentPage(1);
             }}
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Caption className="text-gray-400 font-medium">Category:</Caption>
+        <div className="w-full sm:w-48">
           <SearchableSelect
-            value={categoryFilter}
+            value={statusFilter}
             onChange={(e) => {
-              setCategoryFilter(e.target.value);
+              setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            options={categoryOptions}
-            placeholder="All Categories"
-            size="sm"
-            clearable={false}
-            className="w-40"
+            options={STATUS_FILTER_OPTIONS}
+            placeholder="Filter by status"
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        {paginated.length === 0 ? (
-          <EmptyState
-            title="No purchased accounts found"
-            description="You have not purchased any accounts matching this search."
-            actionLabel="Browse Marketplace"
-            onAction={() => window.location.assign("/")}
-          />
+      {/* Orders Table Card */}
+      <Card className="overflow-hidden bg-white border border-border shadow-xs">
+        {isLoadingOrders ? (
+          <div className="py-20 text-center space-y-3">
+            <Loader2 className="w-8 h-8 text-[#5b52f9] animate-spin mx-auto" />
+            <p className="text-xs text-gray-400">Loading your purchases...</p>
+          </div>
+        ) : totalItems === 0 ? (
+          orders.length === 0 ? (
+            <EmptyState
+              variant="empty"
+              title="No purchases yet"
+              description="Start exploring our digital marketplace to buy verified digital accounts."
+              actionHref="/marketplace"
+              actionLabel="Explore Marketplace"
+            />
+          ) : (
+            <EmptyState
+              variant="search"
+              title="No orders found"
+              description="No orders match your search criteria or filter."
+              onClear={() => {
+                setSearch("");
+                setStatusFilter("all");
+              }}
+            />
+          )
         ) : (
-          <>
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Product / Order</TableHead>
-                  <TableHead>Seller Store</TableHead>
-                  <TableHead>Delivered Date</TableHead>
-                  <TableHead>Warranty Guarantee</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="bg-gray-50/60 border-b border-gray-100">
+                  <TableHead className="py-3 px-4 text-xs font-bold text-gray-700">
+                    Order ID
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-bold text-gray-700">
+                    Product
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-bold text-gray-700">
+                    Seller
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-bold text-gray-700">
+                    Amount
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-bold text-gray-700">
+                    Date
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-bold text-gray-700">
+                    Status
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-bold text-gray-700 text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginated.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <div className="max-w-xs">
-                        <Typography variant="p" className="font-semibold text-gray-900 text-xs truncate">
-                          {item.product}
-                        </Typography>
-                        <Caption className="text-[11px] text-gray-400 font-mono">{item.id}</Caption>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <Store size={12} className="text-brand" />
-                        <span className="text-xs font-semibold text-gray-800">{item.seller}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-gray-500">{item.date}</TableCell>
-                    <TableCell>
-                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 inline-flex items-center gap-1">
-                        <ShieldCheck size={12} /> {item.warrantyUntil}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-gray-900">{item.price}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="inline-flex items-center gap-2">
-                        <Button
-                          variant="brand"
-                          size="xs"
-                          rounded="lg"
-                          onClick={() => {
-                            setSelectedItem(item);
-                            setIsViewerModalOpen(true);
-                          }}
+                {paginatedOrders.map((order) => {
+                  const orderId = (order._id || order.id).toString();
+                  const existingReview = reviewMap[orderId];
+                  const deliveredCount =
+                    order.deliveredCredentials?.length || order.quantity || 1;
+
+                  return (
+                    <TableRow
+                      key={orderId}
+                      className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/40 transition-colors text-xs"
+                    >
+                      {/* Order Number */}
+                      <TableCell className="py-3.5 px-4 font-mono font-bold text-gray-900">
+                        {order.orderNumber}
+                      </TableCell>
+
+                      {/* Product */}
+                      <TableCell className="py-3.5 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={
+                              order.productThumbnail ||
+                              order.product?.thumbnail ||
+                              "/review_avater.jpg"
+                            }
+                            alt=""
+                            className="w-8 h-8 rounded-lg object-cover border border-gray-100 flex-shrink-0"
+                          />
+                          <div>
+                            <p className="font-semibold text-gray-900 line-clamp-1">
+                              {order.productTitle ||
+                                order.product?.title ||
+                                "Digital Account"}
+                            </p>
+                            <p className="text-[11px] text-gray-400">
+                              Qty: {deliveredCount} account(s)
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* Seller */}
+                      <TableCell className="py-3.5 px-4 text-gray-700">
+                        <div className="flex items-center gap-1.5">
+                          <Store size={12} className="text-gray-400" />
+                          <span>
+                            {order.seller?.shopName ||
+                              order.seller?.fullName ||
+                              "Verified Merchant"}
+                          </span>
+                        </div>
+                      </TableCell>
+
+                      {/* Amount */}
+                      <TableCell className="py-3.5 px-4 font-bold text-gray-900">
+                        ${order.totalAmount}
+                      </TableCell>
+
+                      {/* Date */}
+                      <TableCell className="py-3.5 px-4 text-gray-500 text-[11px]">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell className="py-3.5 px-4">
+                        <Badge
+                          variant={
+                            order.status === "completed" ? "success" : "neutral"
+                          }
+                          className="text-[10px] capitalize"
                         >
-                          View Credentials
-                        </Button>
-                        <LinkButton
-                          href={`/buyer/support?orderId=${item.id}&product=${encodeURIComponent(item.product)}`}
-                          variant="outline"
-                          size="xs"
-                          rounded="lg"
-                          title="Claim warranty / replacement"
-                        >
-                          Claim
-                        </LinkButton>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {order.status || "Completed"}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Actions */}
+                      <TableCell className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {/* View Accounts Page Link */}
+                          <Link
+                            href={`/buyer/purchases/${orderId}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-brand text-white hover:bg-brand/90 transition-colors shadow-2xs"
+                          >
+                            <Eye size={13} />
+                            <span>View Accounts</span>
+                          </Link>
+
+                          {/* Review Action */}
+                          {existingReview ? (
+                            existingReview.is_approved ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                <Check size={11} />
+                                <span>{existingReview.rating}★ Live</span>
+                              </span>
+                            ) : (
+                              <span
+                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200"
+                                title="Pending admin approval - only visible to you"
+                              >
+                                <Clock size={11} />
+                                <span>Pending Approval</span>
+                              </span>
+                            )
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              rounded="xl"
+                              onClick={() => handleOpenReviewModal(order)}
+                              className="text-xs"
+                            >
+                              <Star size={13} className="text-amber-500" />
+                              <span>Review</span>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
-          </>
+          </div>
         )}
-      </div>
+      </Card>
 
       {/* Pagination in its own Card */}
-      {paginated.length > 0 && (
-        <Card className="bg-white p-4">
+      {totalItems > 0 && (
+        <Card className="bg-white p-4 border border-border shadow-xs">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={(p) => setCurrentPage(p)}
+            showAlways={totalItems > 0}
           />
         </Card>
       )}
 
-      {/* Credential Viewer Modal */}
-      {isViewerModalOpen && selectedItem && (
+      {/* Review Modal */}
+      {selectedOrderForReview && (
         <Modal
-          isOpen={isViewerModalOpen}
-          onClose={() => setIsViewerModalOpen(false)}
-          title={`Digital Account - ${selectedItem.product}`}
-          maxWidth="max-w-lg"
+          isOpen={!!selectedOrderForReview}
+          onClose={handleCloseReviewModal}
+          title="Write a Product Review"
         >
-          <div className="space-y-4">
-            <div className="p-3 bg-gray-50 rounded-xl border border-border text-xs space-y-1">
-              <div><strong>Order ID:</strong> {selectedItem.id}</div>
-              <div><strong>Seller:</strong> {selectedItem.seller}</div>
-              <div><strong>Warranty Status:</strong> {selectedItem.warrantyUntil}</div>
-            </div>
-
-            {/* Credential Viewer */}
+          <form onSubmit={handleSubmitReview} className="p-6 space-y-5">
             <div>
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
-                Account Credentials
+              <p className="text-xs text-gray-400">Reviewing Product</p>
+              <p className="text-sm font-bold text-gray-900 mt-0.5">
+                {selectedOrderForReview.productTitle}
               </p>
-              <CredentialViewer
-                credentials={selectedItem.credentials}
-                productTitle={selectedItem.product}
-                orderId={selectedItem.id}
-              />
+              <p className="text-[11px] text-gray-500 mt-1">
+                Order #{selectedOrderForReview.orderNumber}
+              </p>
             </div>
 
-            {selectedItem.instructions && (
-              <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 text-xs text-blue-900">
-                <strong>Seller Instructions:</strong> {selectedItem.instructions}
+            {/* Star Rating Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-700">
+                Rating
+              </label>
+              <div className="flex items-center gap-1.5 pt-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => setRating(star)}
+                    className="p-1 text-gray-300 hover:scale-110 transition-transform cursor-pointer"
+                  >
+                    <Star
+                      size={24}
+                      className={
+                        (hoverRating || rating) >= star
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-gray-200"
+                      }
+                    />
+                  </button>
+                ))}
+                <span className="text-xs font-bold text-gray-700 ml-2">
+                  {rating} of 5 Stars
+                </span>
               </div>
-            )}
+            </div>
 
-            <div className="flex justify-between items-center pt-2 border-t border-border">
-              <Link
-                href={`/buyer/support?orderId=${selectedItem.id}&product=${encodeURIComponent(selectedItem.product)}`}
-                className="text-xs font-semibold text-amber-600 hover:underline flex items-center gap-1"
-              >
-                <AlertCircle size={14} /> Account Not Working? File Claim
-              </Link>
+            {/* Comment */}
+            <div>
+              <Textarea
+                label="Your Review Feedback"
+                required
+                rows={4}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share your experience with this account delivery, login smoothness, and seller support..."
+              />
+              <p className="text-[11px] text-gray-400 mt-1.5">
+                Note: Upon submission, your review will be visible to you
+                immediately. It will become public to all visitors once approved
+                by admin.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
               <Button
-                variant="primary"
-                size="sm"
+                type="button"
+                variant="outline-border"
+                size="default"
                 rounded="xl"
-                onClick={() => setIsViewerModalOpen(false)}
+                onClick={handleCloseReviewModal}
               >
-                Close
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="brand"
+                size="default"
+                rounded="xl"
+                disabled={isSubmittingReview}
+              >
+                {isSubmittingReview && (
+                  <Loader2 size={14} className="animate-spin" />
+                )}
+                <span>Submit Review</span>
               </Button>
             </div>
-          </div>
+          </form>
         </Modal>
       )}
     </div>

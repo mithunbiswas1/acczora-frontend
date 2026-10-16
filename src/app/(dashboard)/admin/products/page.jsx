@@ -445,18 +445,14 @@ export default function AdminProductsPage() {
                               <SquarePen size={14} className="stroke-[1.8]" />
                             </Link>
 
-                            {/* 2. View Credentials */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedProduct(product);
-                                setIsCredentialsModalOpen(true);
-                              }}
-                              className="p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
-                              title="View Credentials"
+                            {/* 2. View Credentials & Inventory */}
+                            <Link
+                              href={`/admin/products/view/${product._id}`}
+                              className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
+                              title="View Inventory Details"
                             >
                               <Eye size={14} className="stroke-[1.8]" />
-                            </button>
+                            </Link>
 
                             {/* 3. Status Circle Button */}
                             <button

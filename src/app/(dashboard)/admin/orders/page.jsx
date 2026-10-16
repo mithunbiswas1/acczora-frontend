@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   Search,
   Eye,
@@ -11,6 +12,7 @@ import {
   ShieldCheck,
   Download,
   Lock,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -30,134 +32,96 @@ import EmptyState from "@/components/ui/EmptyState";
 import CredentialViewer from "@/components/ui/CredentialViewer";
 import { Button } from "@/components/ui/Button";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
+import { useGetAllOrdersQuery } from "@/redux/api/orderApi";
 
 const ORDER_STATUS_OPTIONS = [
   { label: "All Orders", value: "all" },
   { label: "Completed", value: "completed" },
+  { label: "Processing", value: "processing" },
   { label: "Disputed", value: "disputed" },
   { label: "Refunded", value: "refunded" },
 ];
 
-const ALL_ORDERS_DATA = [
-  {
-    id: "#ORD-9821",
-    product: "Netflix Premium 4K (1 Month)",
-    category: "Streaming",
-    seller: "NovaStore",
-    sellerEmail: "seller@acczora.com",
-    buyer: "Alex Mercer",
-    buyerEmail: "alex.m@gmail.com",
-    amount: 14.5,
-    commission: 1.45,
-    sellerNet: 13.05,
-    date: "Oct 12, 2026",
-    status: "completed",
-    credentials: "alex_netf_user@netflix.com:SecretStream992",
-  },
-  {
-    id: "#ORD-9820",
-    product: "Canva Pro Educational (1 Year)",
-    category: "Design",
-    seller: "NovaStore",
-    sellerEmail: "seller@acczora.com",
-    buyer: "Sarah Jenkins",
-    buyerEmail: "sarah.j@outlook.com",
-    amount: 9.0,
-    commission: 0.9,
-    sellerNet: 8.1,
-    date: "Oct 11, 2026",
-    status: "completed",
-    credentials: "https://www.canva.com/brand/join?token=xYz789_edu_invitation",
-  },
-  {
-    id: "#ORD-9819",
-    product: "ChatGPT Plus Shared Profile",
-    category: "AI Tools",
-    seller: "AI Accounts Global",
-    sellerEmail: "sales@aiaccounts.net",
-    buyer: "Devin Vance",
-    buyerEmail: "devin.v@gmail.com",
-    amount: 12.0,
-    commission: 1.2,
-    sellerNet: 10.8,
-    date: "Oct 11, 2026",
-    status: "completed",
-    credentials: "chat_pro_share11@openai-team.com:PlusPass7721",
-  },
-  {
-    id: "#ORD-9818",
-    product: "Spotify Family Slot (6 Months)",
-    category: "Music",
-    seller: "DigitalVault BD",
-    sellerEmail: "support@digitalvault.io",
-    buyer: "Ravi Patel",
-    buyerEmail: "ravi.p@yahoo.com",
-    amount: 7.5,
-    commission: 0.75,
-    sellerNet: 6.75,
-    date: "Oct 10, 2026",
-    status: "completed",
-    credentials: "spotify_family_invite@music.org:Sp0t1fyFam99",
-  },
-  {
-    id: "#ORD-9817",
-    product: "NordVPN Dedicated IP (2 Years)",
-    category: "VPN",
-    seller: "CyberSafe Store",
-    sellerEmail: "contact@cybersafe.org",
-    buyer: "Elena Rostova",
-    buyerEmail: "elena@crypto.io",
-    amount: 22.0,
-    commission: 2.2,
-    sellerNet: 19.8,
-    date: "Oct 09, 2026",
-    status: "completed",
-    credentials: "vpn_dedicated_ip_user_88:NordVault339",
-  },
-  {
-    id: "#ORD-9815",
-    product: "Discord Nitro 3 Months Promo Link",
-    category: "Gaming",
-    seller: "GameHaven",
-    sellerEmail: "alex@gamehaven.com",
-    buyer: "Michael Brown",
-    buyerEmail: "mike.b@gmail.com",
-    amount: 4.5,
-    commission: 0.45,
-    sellerNet: 4.05,
-    date: "Oct 08, 2026",
-    status: "disputed",
-    credentials: "https://discord.com/billing/promotions/unclaimed-token-xxx",
-  },
-];
-
 export default function AdminOrdersPage() {
+  const { isLoggedIn } = useSelector((state) => state.auth || {});
+  const { data: ordersData, isLoading } = useGetAllOrdersQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  const filteredOrders = ALL_ORDERS_DATA.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.seller.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.sellerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.buyer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.buyerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+  const rawOrders = useMemo(() => {
+    return Array.isArray(ordersData?.data?.orders)
+      ? ordersData.data.orders
+      : Array.isArray(ordersData?.data)
+      ? ordersData.data
+      : [];
+  }, [ordersData]);
 
-    const matchesStatus =
-      statusFilter === "all" || order.status.toLowerCase() === statusFilter.toLowerCase();
+  const formattedOrders = useMemo(() => {
+    return rawOrders.map((order) => {
+      const credString = Array.isArray(order.deliveredCredentials)
+        ? order.deliveredCredentials.map((c) => c.credential || c).join("\n")
+        : order.deliveredCredentials || "";
+      const orderIdStr = order.orderNumber || `#ORD-${String(order._id || order.id).slice(-6)}`;
+      const amountVal = Number(order.totalAmount || 0);
+      const commission = Number((amountVal * 0.1).toFixed(2));
+      const sellerNet = Number((amountVal - commission).toFixed(2));
+      const formattedDate = order.createdAt
+        ? new Date(order.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "Recent";
 
-    return matchesSearch && matchesStatus;
-  });
+      return {
+        id: orderIdStr,
+        rawId: order._id || order.id,
+        product: order.productTitle || order.product?.title || "Digital Product",
+        category: order.product?.category?.name || "Digital Account",
+        seller: order.seller?.shopName || order.seller?.fullName || "Verified Seller",
+        sellerEmail: order.seller?.email || "seller@acczora.com",
+        buyer: order.buyer?.fullName || order.buyer?.username || "Verified Buyer",
+        buyerEmail: order.buyer?.email || "buyer@acczora.com",
+        amount: amountVal,
+        commission: commission,
+        sellerNet: sellerNet,
+        date: formattedDate,
+        status: order.status || "completed",
+        credentials: credString,
+      };
+    });
+  }, [rawOrders]);
+
+  const filteredOrders = useMemo(() => {
+    return formattedOrders.filter((order) => {
+      const matchesSearch =
+        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.seller.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.sellerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.buyer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.buyerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || order.status.toLowerCase() === statusFilter.toLowerCase();
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [formattedOrders, searchTerm, statusFilter]);
 
   const totalItems = filteredOrders.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
-  const paginated = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginated = useMemo(() => {
+    return filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [filteredOrders, currentPage, pageSize]);
 
   return (
     <div className="space-y-6">
@@ -206,7 +170,12 @@ export default function AdminOrdersPage() {
 
       {/* Orders Table */}
       <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        {paginated.length === 0 ? (
+        {isLoading ? (
+          <div className="py-20 text-center space-y-3">
+            <Loader2 className="w-8 h-8 text-brand animate-spin mx-auto" />
+            <p className="text-xs text-gray-400">Loading marketplace orders...</p>
+          </div>
+        ) : paginated.length === 0 ? (
           <EmptyState
             title="No orders found"
             description="No orders match your search criteria."

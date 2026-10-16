@@ -23,9 +23,11 @@ export default function CredentialViewer({
     ? credentials.split("\n").filter(Boolean)
     : [];
 
-  const stringList = rawList.map((item) =>
-    typeof item === "string" ? item : JSON.stringify(item)
-  );
+  const stringList = rawList.map((item) => {
+    if (typeof item === "string") return item;
+    if (item && typeof item === "object" && item.credential) return item.credential;
+    return JSON.stringify(item);
+  });
 
   const fullText = stringList.join("\n");
 

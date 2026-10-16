@@ -1,32 +1,45 @@
-// src/app/(pages)/seller/_components/SellersListContainer.jsx
+// src/app/(pages)/sellers/_components/SellersListContainer.jsx
+
 "use client";
 
 import { useState, useMemo } from "react";
 import SellersFilterBar from "./SellersFilterBar";
 import SellerCard from "@/components/shared/SellerCard";
+import { useGetAllStoresQuery } from "@/redux/api/storeApi";
 
 export default function SellersListContainer({ initialSellers = [] }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [verifiedOnly, setVerifiedOnly] = useState(true);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Top Rated");
+
+  const { data: storesResponse, isLoading } = useGetAllStoresQuery({
+    search: searchQuery,
+  });
+
+  const allSellers = useMemo(() => {
+    const apiStores = storesResponse?.data?.stores;
+    if (Array.isArray(apiStores) && apiStores.length > 0) {
+      return apiStores;
+    }
+    return initialSellers;
+  }, [storesResponse, initialSellers]);
 
   // Filter and sort sellers
   const filteredSellers = useMemo(() => {
-    return initialSellers
+    return allSellers
       .filter((seller) => {
         // Verified filter
-        if (verifiedOnly && !seller.isVerified) {
+        const isVerified = seller.isVerified !== undefined ? seller.isVerified : seller.verified;
+        if (verifiedOnly && !isVerified) {
           return false;
         }
 
         // Search query
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
-          const matchesName = seller.name.toLowerCase().includes(q);
-          const matchesPlatform = seller.platforms?.some((p) =>
-            p.name.toLowerCase().includes(q)
-          );
-          if (!matchesName && !matchesPlatform) {
+          const sellerName = (seller.name || seller.shopName || seller.fullName || "").toLowerCase();
+          const sellerSlug = (seller.slug || seller.shopSlug || "").toLowerCase();
+          if (!sellerName.includes(q) && !sellerSlug.includes(q)) {
             return false;
           }
         }
@@ -34,18 +47,20 @@ export default function SellersListContainer({ initialSellers = [] }) {
         return true;
       })
       .sort((a, b) => {
+        const ratingA = Number(a.rating || 5);
+        const ratingB = Number(b.rating || 5);
         if (selectedSort === "Top Rated") {
-          return b.rating - a.rating;
+          return ratingB - ratingA;
         }
         if (selectedSort === "Most Sales") {
-          return b.id - a.id;
+          return (b.totalProducts || 0) - (a.totalProducts || 0);
         }
         if (selectedSort === "Newest") {
-          return b.id - a.id;
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         }
         return 0;
       });
-  }, [initialSellers, searchQuery, verifiedOnly, selectedSort]);
+  }, [allSellers, searchQuery, verifiedOnly, selectedSort]);
 
   return (
     <div>
@@ -58,7 +73,7 @@ export default function SellersListContainer({ initialSellers = [] }) {
         selectedSort={selectedSort}
         onSortChange={setSelectedSort}
         currentCount={filteredSellers.length}
-        totalCount={214}
+        totalCount={allSellers.length}
       />
 
       {/* Grid of Sellers */}
@@ -66,9 +81,9 @@ export default function SellersListContainer({ initialSellers = [] }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 mt-4">
           {filteredSellers.map((seller) => (
             <SellerCard
-              key={seller.id}
+              key={seller._id || seller.id}
               seller={seller}
-              href={`/seller/${seller.slug || "nova-store"}`}
+              href={`/store/${seller.slug || seller.shopSlug || "nova-store"}`}
             />
           ))}
         </div>

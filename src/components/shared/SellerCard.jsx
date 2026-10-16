@@ -16,21 +16,19 @@ const defaultLogos = [
 ];
 
 export default function SellerCard({ seller = {}, href }) {
-  const {
-    name = "NovaStore",
-    slug = "nova-store",
-    verified = seller?.verified !== undefined ? seller.verified : (seller?.isVerified !== undefined ? seller.isVerified : true),
-    avatar = seller?.avatar || "/seller_avater.jpg",
-    banner = seller?.banner || seller?.cover || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
-    sales = "2.4K+ Sales",
-    productsCount = "126 Products",
-    rating = "4.5",
-    reviews = seller?.reviews || seller?.reviewsCount || "350+ Reviews",
-    extraCount = seller?.extraCount || seller?.extraPlatformsCount || "120+",
-    logos = seller?.logos || (seller?.platforms ? seller.platforms.map((p) => (typeof p === "string" ? p : p.icon)) : defaultLogos),
-  } = seller;
+  const name = seller?.name || seller?.shopName || seller?.fullName || "NovaStore";
+  const slug = seller?.slug || seller?.shopSlug || seller?.userName || "nova-store";
+  const verified = seller?.verified !== undefined ? seller.verified : (seller?.isVerified !== undefined ? seller.isVerified : true);
+  const avatar = seller?.avatar || seller?.logo || seller?.shopLogo || seller?.image || "/review_avater.jpg";
+  const banner = seller?.banner || seller?.cover || seller?.shopBanner || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80";
+  const sales = seller?.sales || "Active Merchant";
+  const productsCount = seller?.productsCount || (seller?.totalProducts !== undefined ? `${seller.totalProducts} Products` : "Digital Products");
+  const rating = seller?.rating ? Number(seller.rating).toFixed(1) : "5.0";
+  const reviews = seller?.reviews || (seller?.reviewsCount !== undefined ? `${seller.reviewsCount} Reviews` : "Verified");
+  const extraCount = seller?.extraCount || seller?.extraPlatformsCount || "Instant";
+  const logos = seller?.logos || (seller?.platforms ? seller.platforms.map((p) => (typeof p === "string" ? p : p.icon)) : defaultLogos);
 
-  const targetHref = href || `/seller/${slug || "nova-store"}`;
+  const targetHref = href || `/store/${slug || "nova-store"}`;
 
   return (
     <div className="group relative bg-card rounded-[12px] border border-border cursor-pointer transition-all duration-200 hover:border-brand flex flex-col justify-between overflow-hidden">

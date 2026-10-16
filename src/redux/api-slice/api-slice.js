@@ -9,8 +9,7 @@ const baseQuery = fetchBaseQuery({
   credentials: "include", // Send & receive HTTP cookies automatically
   prepareHeaders: (headers) => {
     if (typeof window !== "undefined") {
-      const token =
-        getCookie("accessToken") || localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -33,9 +32,6 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
         deleteCookie("userRole");
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("userRole");
         localStorage.removeItem("user");
 
         // only redirect if in protected pages
@@ -68,8 +64,17 @@ export const apiSlice = createApi({
     "Auth",
     "Profile",
     "Orders",
+    "Order",
     "ProductReviews",
+    "Review",
+    "Store",
+    "User",
     "Tracking",
+    "Earning",
+    "Withdraw",
+    "Role",
+    "Support",
+    "Setting",
   ],
   endpoints: () => ({}),
 });
