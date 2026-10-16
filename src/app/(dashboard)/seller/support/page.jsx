@@ -27,9 +27,24 @@ import {
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import Textarea from "@/components/ui/Textarea";
 import { Typography, H2, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
+
+const SUPPORT_CATEGORIES = [
+  { label: "Payout & Withdrawal", value: "Payout" },
+  { label: "Store Quota / Limit", value: "Store Quota" },
+  { label: "Merchant Verification", value: "Verification" },
+  { label: "Order Dispute Assistance", value: "Order Dispute" },
+  { label: "Technical Bug", value: "Technical" },
+];
+
+const SUPPORT_PRIORITIES = [
+  { label: "Low (General question)", value: "low" },
+  { label: "Medium (Requires assistance)", value: "medium" },
+  { label: "High (Urgent payout/account issue)", value: "high" },
+];
 
 const SELLER_TICKETS = [
   {
@@ -204,8 +219,8 @@ export default function SellerSupportPage() {
                         t.priority === "high"
                           ? "danger"
                           : t.priority === "medium"
-                          ? "warning"
-                          : "default"
+                            ? "warning"
+                            : "default"
                       }
                       size="sm"
                     >
@@ -218,8 +233,8 @@ export default function SellerSupportPage() {
                         t.status === "open"
                           ? "danger"
                           : t.status === "in_progress"
-                          ? "warning"
-                          : "success"
+                            ? "warning"
+                            : "success"
                       }
                       size="sm"
                     >
@@ -271,20 +286,16 @@ export default function SellerSupportPage() {
           title="Open a New Support Ticket"
         >
           <form onSubmit={handleCreateTicket} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-700">Category</label>
-              <Select
-                value={newTicket.category}
-                onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
-                className="w-full text-xs"
-              >
-                <option value="Payout">Payout & Withdrawal</option>
-                <option value="Store Quota">Store Quota / Limit</option>
-                <option value="Verification">Merchant Verification</option>
-                <option value="Order Dispute">Order Dispute Assistance</option>
-                <option value="Technical">Technical Bug</option>
-              </Select>
-            </div>
+            <SearchableSelect
+              label="Category"
+              value={newTicket.category}
+              onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
+              options={SUPPORT_CATEGORIES}
+              placeholder="Select Category"
+              size="md"
+              clearable={false}
+              className="w-full text-xs"
+            />
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-700">Subject</label>
@@ -296,29 +307,25 @@ export default function SellerSupportPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-700">Priority</label>
-              <Select
-                value={newTicket.priority}
-                onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
-                className="w-full text-xs"
-              >
-                <option value="low">Low (General question)</option>
-                <option value="medium">Medium (Requires assistance)</option>
-                <option value="high">High (Urgent payout/account issue)</option>
-              </Select>
-            </div>
+            <SearchableSelect
+              label="Priority"
+              value={newTicket.priority}
+              onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
+              options={SUPPORT_PRIORITIES}
+              placeholder="Select Priority"
+              size="md"
+              clearable={false}
+              className="w-full text-xs"
+            />
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-700">Description</label>
-              <textarea
-                rows={4}
-                placeholder="Please describe the issue in detail, include transaction IDs or order numbers..."
-                value={newTicket.message}
-                onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
-                className="w-full text-xs p-3 border border-border rounded-xl focus:outline-none focus:border-brand"
-              />
-            </div>
+            <Textarea
+              label="Description"
+              rows={4}
+              placeholder="Please describe the issue in detail, include transaction IDs or order numbers..."
+              value={newTicket.message}
+              onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
+              className="w-full text-xs"
+            />
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button

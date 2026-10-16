@@ -27,14 +27,29 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/Table";
+import { Card } from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 import Modal from "@/components/ui/Modal";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { Typography, H2, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
+
+const SELLER_WITHDRAWAL_STATUS_OPTIONS = [
+  { label: "All Statuses", value: "all" },
+  { label: "Completed", value: "completed" },
+  { label: "Pending", value: "pending" },
+  { label: "Failed", value: "failed" },
+];
+
+const PAYOUT_METHOD_OPTIONS = [
+  { label: "USDT (TRC-20) - $1.00 Network Fee", value: "USDT (TRC-20)" },
+  { label: "Binance Pay (ID) - Instant & 0% Fee", value: "Binance Pay ID" },
+  { label: "bKash (Personal) - 1.5% Fee", value: "bKash (Personal)" },
+  { label: "Bank Wire Transfer - $10.00 Fee", value: "Bank Transfer" },
+];
 
 const DEMO_WITHDRAWALS = [
   {
@@ -290,20 +305,18 @@ export default function SellerWithdrawalsAndEarningsPage() {
               />
             </div>
 
-            <Select
-              variant="filter"
+            <SearchableSelect
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-10 text-xs min-w-[130px]"
-            >
-              <option value="all">All Statuses</option>
-              <option value="completed">Completed</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-            </Select>
+              options={SELLER_WITHDRAWAL_STATUS_OPTIONS}
+              placeholder="All Statuses"
+              size="sm"
+              clearable={false}
+              className="w-36"
+            />
           </div>
 
           {/* Table */}
@@ -353,18 +366,16 @@ export default function SellerWithdrawalsAndEarningsPage() {
                 )}
               </TableBody>
             </Table>
-
-            <div className="p-4 border-t border-border flex items-center justify-between">
-              <p className="text-xs text-gray-500">
-                Showing {paginatedWithdrawals.length} of {filteredWithdrawals.length} payouts
-              </p>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
           </div>
+
+          {/* Pagination in its own Card */}
+          <Card className="bg-white p-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </Card>
         </div>
       )}
 
@@ -439,19 +450,16 @@ export default function SellerWithdrawalsAndEarningsPage() {
               <span className="text-sm font-bold text-brand">${availableBalance.toFixed(2)}</span>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-700">Payout Method</label>
-              <Select
-                value={withdrawForm.method}
-                onChange={(e) => setWithdrawForm({ ...withdrawForm, method: e.target.value })}
-                className="w-full text-xs"
-              >
-                <option value="USDT (TRC-20)">USDT (TRC-20) - $1.00 Network Fee</option>
-                <option value="Binance Pay ID">Binance Pay (ID) - Instant & 0% Fee</option>
-                <option value="bKash (Personal)">bKash (Personal) - 1.5% Fee</option>
-                <option value="Bank Transfer">Bank Wire Transfer - $10.00 Fee</option>
-              </Select>
-            </div>
+            <SearchableSelect
+              label="Payout Method"
+              value={withdrawForm.method}
+              onChange={(e) => setWithdrawForm({ ...withdrawForm, method: e.target.value })}
+              options={PAYOUT_METHOD_OPTIONS}
+              placeholder="Select Payout Method"
+              size="md"
+              clearable={false}
+              className="w-full text-xs"
+            />
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-700">Withdraw Amount ($ USD)</label>

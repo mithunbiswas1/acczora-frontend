@@ -16,18 +16,38 @@ export const endpoints = {
 
   // Category API
   category: {
-    categories: "categories",
+    getAllCategories: "get-all-categories",
+    getListCategories: "get-list-categories",
+    getCategoryBySlug: "get-category-by-slug",
+    getCategoryById: "get-category-by-id",
+    createCategory: "create-category",
+    updateCategory: "update-category",
+    deleteCategory: "delete-category",
+    toggleCategoryStatus: "toggle-category-status",
   },
 
   // Subcategory API
   subcategory: {
-    subcategories: "subcategories",
+    getAllSubcategories: "get-all-subcategories",
+    getListSubcategories: "get-list-subcategories",
+    getSubcategoryBySlug: "get-subcategory-by-slug",
+    getSubcategoryById: "get-subcategory-by-id",
+    createSubcategory: "create-subcategory",
+    updateSubcategory: "update-subcategory",
+    deleteSubcategory: "delete-subcategory",
+    toggleSubcategoryStatus: "toggle-subcategory-status",
   },
 
   // Product API
   product: {
-    product: "products",
-    seller: "products/seller",
+    getAllProducts: "get-all-products",
+    getSellerProducts: "get-seller-products",
+    getProductById: "get-product-by-id",
+    getProductBySlug: "get-product-by-slug",
+    createProduct: "create-product",
+    updateProduct: "update-product",
+    deleteProduct: "delete-product",
+    toggleProductStatus: "toggle-product-status",
   },
 
   //Product Review

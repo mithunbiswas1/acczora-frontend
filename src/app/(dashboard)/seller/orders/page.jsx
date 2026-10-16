@@ -22,14 +22,22 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import CredentialViewer from "@/components/ui/CredentialViewer";
 import { Button } from "@/components/ui/Button";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
+
+const SELLER_ORDER_STATUS_OPTIONS = [
+  { label: "All Orders", value: "all" },
+  { label: "Completed", value: "completed" },
+  { label: "Disputed", value: "disputed" },
+  { label: "Refunded", value: "refunded" },
+];
 
 const DEMO_ORDERS = [
   {
@@ -167,20 +175,18 @@ export default function SellerOrdersPage() {
 
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Caption className="text-gray-400 font-medium">Status:</Caption>
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-auto"
-          >
-            <option value="all">All Orders</option>
-            <option value="completed">Completed</option>
-            <option value="disputed">Disputed</option>
-            <option value="refunded">Refunded</option>
-          </Select>
+            options={SELLER_ORDER_STATUS_OPTIONS}
+            placeholder="All Orders"
+            size="sm"
+            clearable={false}
+            className="w-36"
+          />
         </div>
       </div>
 
@@ -249,19 +255,22 @@ export default function SellerOrdersPage() {
                 ))}
               </TableBody>
             </Table>
-
-            <div className="p-4 border-t border-border">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={(page) => setCurrentPage(page)}
-              />
-            </div>
           </>
         )}
       </div>
+
+      {/* Pagination in its own Card */}
+      {paginatedOrders.length > 0 && (
+        <Card className="bg-white p-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        </Card>
+      )}
 
       {/* Order Detail & Delivered Credential Modal */}
       {isDetailModalOpen && selectedOrder && (

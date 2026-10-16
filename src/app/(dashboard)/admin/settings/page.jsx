@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Save, ShieldCheck, DollarSign, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
 
@@ -121,41 +122,47 @@ export default function AdminSettingsPage() {
           </div>
 
           <div className="space-y-3">
-            <label className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-gray-50 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                name="requireReviewApproval"
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-gray-50 transition-colors">
+              <Checkbox
+                id="requireReviewApproval"
                 checked={settings.requireReviewApproval}
-                onChange={handleChange}
-                className="w-4 h-4 text-brand rounded border-gray-300 focus:ring-brand"
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    requireReviewApproval: !!checked,
+                  }))
+                }
               />
-              <div>
+              <label htmlFor="requireReviewApproval" className="cursor-pointer">
                 <span className="text-xs font-bold text-gray-900 block">
                   Require Admin Approval for Customer Reviews
                 </span>
                 <Caption className="text-gray-500">
                   When enabled, reviews submitted by buyers must be approved in Admin &gt; Reviews before appearing publicly.
                 </Caption>
-              </div>
-            </label>
+              </label>
+            </div>
 
-            <label className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-gray-50 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                name="maintenanceMode"
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-gray-50 transition-colors">
+              <Checkbox
+                id="maintenanceMode"
                 checked={settings.maintenanceMode}
-                onChange={handleChange}
-                className="w-4 h-4 text-brand rounded border-gray-300 focus:ring-brand"
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    maintenanceMode: !!checked,
+                  }))
+                }
               />
-              <div>
+              <label htmlFor="maintenanceMode" className="cursor-pointer">
                 <span className="text-xs font-bold text-gray-900 block">
                   Marketplace Maintenance Mode
                 </span>
                 <Caption className="text-gray-500">
                   Temporarily disable new checkout orders while performing upgrades.
                 </Caption>
-              </div>
-            </label>
+              </label>
+            </div>
           </div>
         </div>
 

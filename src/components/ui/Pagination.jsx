@@ -45,24 +45,24 @@ export default function Pagination({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2 text-xs text-gray-500 ${className}`}
+      className={`flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 px-1 sm:px-2 text-xs text-gray-500 ${className}`}
     >
       {/* Items count summary */}
-      <div>
+      <div className="text-center sm:text-left text-xs">
         Showing <span className="font-semibold text-gray-900">{startItem}</span> to{" "}
         <span className="font-semibold text-gray-900">{endItem}</span> of{" "}
         <span className="font-semibold text-gray-900">{totalItems}</span> items
       </div>
 
       {/* Page controls */}
-      <div className="flex items-center gap-1.5 select-none">
+      <div className="flex items-center flex-wrap justify-center gap-1 sm:gap-1.5 select-none">
         {/* Previous Button */}
         <button
           type="button"
           onClick={() => currentPage > 1 && onPageChange?.(currentPage - 1)}
           disabled={currentPage <= 1}
           aria-label="Previous page"
-          className="p-1.5 rounded-lg border border-border text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg border border-border text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronLeft size={16} />
         </button>
@@ -71,7 +71,7 @@ export default function Pagination({
         {getPageNumbers().map((p, idx) => {
           if (p === "...") {
             return (
-              <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">
+              <span key={`ellipsis-${idx}`} className="px-1.5 text-gray-400">
                 <MoreHorizontal size={14} />
               </span>
             );
@@ -82,11 +82,10 @@ export default function Pagination({
               key={p}
               type="button"
               onClick={() => onPageChange?.(p)}
-              className={`min-w-[32px] h-8 px-2 rounded-lg font-semibold transition-all ${
-                isActive
+              className={`min-w-[30px] sm:min-w-[32px] h-7 sm:h-8 px-1.5 sm:px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isActive
                   ? "bg-[#5b45ff] text-white shadow-xs"
                   : "border border-border text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
+                }`}
             >
               {p}
             </button>
@@ -99,7 +98,7 @@ export default function Pagination({
           onClick={() => currentPage < totalPages && onPageChange?.(currentPage + 1)}
           disabled={currentPage >= totalPages}
           aria-label="Next page"
-          className="p-1.5 rounded-lg border border-border text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg border border-border text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronRight size={16} />
         </button>

@@ -23,14 +23,31 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Typography from "@/components/ui/Typography";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { toast } from "sonner";
+
+const REVIEW_STATUS_OPTIONS = [
+  { label: "All Statuses", value: "all" },
+  { label: "Pending Moderation", value: "pending" },
+  { label: "Approved & Live", value: "approved" },
+  { label: "Rejected", value: "rejected" },
+];
+
+const REVIEW_STAR_OPTIONS = [
+  { label: "All Stars", value: "all" },
+  { label: "5 Stars", value: "5" },
+  { label: "4 Stars", value: "4" },
+  { label: "3 Stars", value: "3" },
+  { label: "2 Stars", value: "2" },
+  { label: "1 Star", value: "1" },
+];
 
 const INITIAL_REVIEWS = [
   {
@@ -172,41 +189,35 @@ export default function AdminReviewsPage() {
           {/* Status Filter */}
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-gray-400 font-medium">Status:</span>
-            <Select
-              variant="filter"
+            <SearchableSelect
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-auto"
-            >
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending Moderation</option>
-              <option value="approved">Approved & Live</option>
-              <option value="rejected">Rejected</option>
-            </Select>
+              options={REVIEW_STATUS_OPTIONS}
+              placeholder="All Statuses"
+              size="sm"
+              clearable={false}
+              className="w-44"
+            />
           </div>
 
           {/* Star Filter */}
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-gray-400 font-medium">Rating:</span>
-            <Select
-              variant="filter"
+            <SearchableSelect
               value={starFilter}
               onChange={(e) => {
                 setStarFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-auto"
-            >
-              <option value="all">All Stars</option>
-              <option value="5">5 Stars</option>
-              <option value="4">4 Stars</option>
-              <option value="3">3 Stars</option>
-              <option value="2">2 Stars</option>
-              <option value="1">1 Star</option>
-            </Select>
+              options={REVIEW_STAR_OPTIONS}
+              placeholder="All Stars"
+              size="sm"
+              clearable={false}
+              className="w-36"
+            />
           </div>
         </div>
       </div>
@@ -269,8 +280,8 @@ export default function AdminReviewsPage() {
                         {rev.status === "approved"
                           ? "Live on Store"
                           : rev.status === "rejected"
-                          ? "Rejected"
-                          : "Pending Approval"}
+                            ? "Rejected"
+                            : "Pending Approval"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -311,19 +322,22 @@ export default function AdminReviewsPage() {
                 ))}
               </TableBody>
             </Table>
-
-            <div className="p-4 border-t border-border">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={(p) => setCurrentPage(p)}
-              />
-            </div>
           </>
         )}
       </div>
+
+      {/* Pagination in its own Card */}
+      {paginated.length > 0 && (
+        <Card className="bg-white p-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(p) => setCurrentPage(p)}
+          />
+        </Card>
+      )}
 
       {/* Inspect Review Modal */}
       {inspectReview && (

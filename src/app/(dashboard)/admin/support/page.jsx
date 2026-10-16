@@ -17,6 +17,7 @@ import {
   Send,
 } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import {
   Table,
@@ -28,11 +29,38 @@ import {
 } from "@/components/ui/Table";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import Textarea from "@/components/ui/Textarea";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import { Typography, H2, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
+
+const STATUS_FILTER_OPTIONS = [
+  { label: "All Statuses", value: "all" },
+  { label: "Open", value: "open" },
+  { label: "In Progress", value: "in_progress" },
+  { label: "Resolved", value: "resolved" },
+];
+
+const PRIORITY_FILTER_OPTIONS = [
+  { label: "All Priorities", value: "all" },
+  { label: "High", value: "high" },
+  { label: "Medium", value: "medium" },
+  { label: "Low", value: "low" },
+];
+
+const ROLE_FILTER_OPTIONS = [
+  { label: "All Roles", value: "all" },
+  { label: "Sellers", value: "seller" },
+  { label: "Buyers", value: "buyer" },
+];
+
+const TICKET_STATUS_OPTIONS = [
+  { label: "Open", value: "open" },
+  { label: "In Progress", value: "in_progress" },
+  { label: "Resolved", value: "resolved" },
+];
 
 const INITIAL_TICKETS = [
   {
@@ -248,49 +276,44 @@ export default function AdminSupportPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="h-10 text-xs min-w-[120px]"
-          >
-            <option value="all">All Statuses</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-          </Select>
+            options={STATUS_FILTER_OPTIONS}
+            placeholder="All Statuses"
+            size="sm"
+            clearable={false}
+            className="w-36 flex-shrink-0"
+          />
 
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={priorityFilter}
             onChange={(e) => {
               setPriorityFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="h-10 text-xs min-w-[120px]"
-          >
-            <option value="all">All Priorities</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </Select>
+            options={PRIORITY_FILTER_OPTIONS}
+            placeholder="All Priorities"
+            size="sm"
+            clearable={false}
+            className="w-36 flex-shrink-0"
+          />
 
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={roleFilter}
             onChange={(e) => {
               setRoleFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="h-10 text-xs min-w-[120px]"
-          >
-            <option value="all">All Roles</option>
-            <option value="buyer">Buyers Only</option>
-            <option value="seller">Sellers Only</option>
-          </Select>
+            options={ROLE_FILTER_OPTIONS}
+            placeholder="All Roles"
+            size="sm"
+            clearable={false}
+            className="w-36 flex-shrink-0"
+          />
         </div>
       </div>
 
@@ -389,19 +412,16 @@ export default function AdminSupportPage() {
             )}
           </TableBody>
         </Table>
-
-        {/* Pagination */}
-        <div className="p-4 border-t border-border flex items-center justify-between">
-          <p className="text-xs text-gray-500">
-            Showing {paginatedTickets.length} of {filteredTickets.length} tickets
-          </p>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
       </div>
+
+      {/* Pagination in its own Card */}
+      <Card className="bg-white p-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </Card>
 
       {/* Ticket Details & Reply Modal */}
       {selectedTicket && (
@@ -423,15 +443,14 @@ export default function AdminSupportPage() {
 
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Change Status:</span>
-                <select
+                <SearchableSelect
                   value={selectedTicket.status}
                   onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
-                  className="text-xs font-semibold bg-white border border-gray-200 rounded-lg px-2 py-1"
-                >
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="resolved">Resolved</option>
-                </select>
+                  options={TICKET_STATUS_OPTIONS}
+                  size="sm"
+                  clearable={false}
+                  className="w-32"
+                />
               </div>
             </div>
 
@@ -464,12 +483,12 @@ export default function AdminSupportPage() {
 
             {/* Reply Input */}
             <div className="pt-2 border-t border-border space-y-2">
-              <textarea
+              <Textarea
                 rows={3}
                 placeholder="Type your response to user here..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                className="w-full text-xs p-3 border border-border rounded-xl focus:outline-none focus:border-brand"
+                className="w-full text-xs"
               />
               <div className="flex items-center justify-end gap-2">
                 <Button

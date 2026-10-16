@@ -18,9 +18,16 @@ import {
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
+
+const ASSIGNED_ROLE_OPTIONS = [
+  { label: "Super Admin (All Pages)", value: "super_admin" },
+  { label: "Admin (Granular Access)", value: "admin" },
+  { label: "Seller", value: "seller" },
+  { label: "Buyer", value: "buyer" },
+];
 import {
   useGetAdminUsersQuery,
   useUpdateUserByAdminMutation,
@@ -224,11 +231,10 @@ export default function AdminRolesPage() {
                 <button
                   key={u._id}
                   onClick={() => handleSelectUser(u)}
-                  className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between ${
-                    isSelected
+                  className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between ${isSelected
                       ? "bg-brand/10 border border-brand/30 shadow-xs"
                       : "border border-border/40 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <div className="min-w-0 pr-2">
                     <Typography variant="p" className={`text-xs font-bold truncate ${isSelected ? "text-brand" : "text-gray-900"}`}>
@@ -257,7 +263,7 @@ export default function AdminRolesPage() {
 
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-700">Assigned Role:</span>
-              <Select
+              <SearchableSelect
                 value={editedRole}
                 onChange={(e) => {
                   const newR = e.target.value;
@@ -270,13 +276,12 @@ export default function AdminRolesPage() {
                     setPermissionsState(allTrue);
                   }
                 }}
-                className="w-auto"
-              >
-                <option value="super_admin">Super Admin (All Pages)</option>
-                <option value="admin">Admin (Granular Access)</option>
-                <option value="seller">Seller</option>
-                <option value="buyer">Buyer</option>
-              </Select>
+                options={ASSIGNED_ROLE_OPTIONS}
+                placeholder="Select Role"
+                size="sm"
+                clearable={false}
+                className="w-48"
+              />
             </div>
           </div>
 
@@ -327,24 +332,20 @@ export default function AdminRolesPage() {
                       {ACTIONS.map((act) => {
                         const isChecked = !!currentMod[act.key];
                         return (
-                          <label
+                          <button
                             key={act.key}
-                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
+                            type="button"
+                            disabled={editedRole === "super_admin"}
+                            onClick={() => handlePermissionToggle(mod.key, act.key)}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-colors disabled:cursor-not-allowed ${
                               isChecked
                                 ? "bg-brand/10 text-brand border-brand/40"
                                 : "bg-gray-50 text-gray-500 border-border hover:bg-gray-100"
                             }`}
                           >
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              disabled={editedRole === "super_admin"}
-                              onChange={() => handlePermissionToggle(mod.key, act.key)}
-                              className="hidden"
-                            />
                             {isChecked ? <Check size={12} /> : <X size={12} className="opacity-40" />}
                             <span>{act.label}</span>
-                          </label>
+                          </button>
                         );
                       })}
 

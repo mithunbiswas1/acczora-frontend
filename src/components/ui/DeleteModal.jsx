@@ -52,23 +52,7 @@ export default function DeleteModal({
 
       {/* Modal Dialog */}
       <div className="relative w-full max-w-md bg-white rounded-2xl border border-gray-100 shadow-2xl z-10 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200">
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={isLoading}
-          className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Close dialog"
-        >
-          <X size={18} />
-        </button>
-
         <div className="p-6 sm:p-7">
-          {/* Danger Icon */}
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center mb-5">
-            <Trash2 size={22} strokeWidth={2.2} />
-          </div>
-
           {/* Heading */}
           <h3 className="text-lg font-bold text-gray-900 tracking-tight">
             {title || `Delete ${itemType}?`}

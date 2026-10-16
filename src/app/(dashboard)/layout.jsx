@@ -150,20 +150,20 @@ export default function DashboardLayout({ children }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#fafbfc]">
         {/* Top Header Bar */}
-        <header className="flex items-center justify-between px-6 md:px-8 h-18 bg-white border-b border-border flex-shrink-0 z-30">
+        <header className="flex items-center justify-between px-3.5 sm:px-6 md:px-8 h-16 sm:h-18 bg-white border-b border-border flex-shrink-0 z-30">
           {/* Left: Hamburger & Page Title */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Button
               variant="ghost"
               size="icon_sm"
               rounded="lg"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden -ml-1.5 text-gray-700 hover:text-gray-900"
+              className="md:hidden -ml-1 text-gray-700 hover:text-gray-900 flex-shrink-0"
               aria-label="Toggle Menu"
             >
               <Menu size={22} />
             </Button>
-            <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-base sm:text-xl font-bold text-gray-900 tracking-tight truncate">
               {/* Admin Routes */}
               {pathname === "/admin" || pathname === "/admin/overview"
                 ? "Dashboard"
@@ -361,8 +361,8 @@ export default function DashboardLayout({ children }) {
         </header>
 
         {/* Page Content Container */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scrollbar-thin">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 lg:p-8 scrollbar-thin">
+          <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
             {children}
           </div>
         </main>

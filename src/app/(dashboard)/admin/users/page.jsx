@@ -26,15 +26,24 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import LinkButton from "@/components/ui/LinkButton";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
 import { useGetAdminUsersQuery, useUpdateUserByAdminMutation } from "@/redux/api/authApi";
+
+const USER_ROLE_OPTIONS = [
+  { label: "All Roles", value: "all" },
+  { label: "Buyers", value: "buyer" },
+  { label: "Sellers", value: "seller" },
+  { label: "Admins", value: "admin" },
+  { label: "Super Admins", value: "super_admin" },
+];
 
 const DEMO_USERS = [
   {
@@ -153,21 +162,18 @@ export default function AdminUsersPage() {
 
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Caption className="text-gray-400 font-medium">Role:</Caption>
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={roleFilter}
             onChange={(e) => {
               setRoleFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-auto"
-          >
-            <option value="all">All Roles</option>
-            <option value="buyer">Buyers</option>
-            <option value="seller">Sellers</option>
-            <option value="admin">Admins</option>
-            <option value="super_admin">Super Admins</option>
-          </Select>
+            options={USER_ROLE_OPTIONS}
+            placeholder="All Roles"
+            size="sm"
+            clearable={false}
+            className="w-40"
+          />
         </div>
       </div>
 
@@ -231,19 +237,22 @@ export default function AdminUsersPage() {
                 ))}
               </TableBody>
             </Table>
-
-            <div className="p-4 border-t border-border">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={(p) => setCurrentPage(p)}
-              />
-            </div>
           </>
         )}
       </div>
+
+      {/* Pagination in its own Card */}
+      {paginated.length > 0 && (
+        <Card className="bg-white p-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(p) => setCurrentPage(p)}
+          />
+        </Card>
+      )}
     </div>
   );
 }

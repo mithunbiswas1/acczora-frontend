@@ -23,15 +23,24 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import LinkButton from "@/components/ui/LinkButton";
 import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
+
+const PAYMENT_GATEWAY_OPTIONS = [
+  { label: "Crypto - USDT (TRC-20)", value: "USDT (TRC-20)" },
+  { label: "Binance Pay (Instant 0% Fee)", value: "Binance Pay" },
+  { label: "bKash (Instant Checkout)", value: "bKash" },
+  { label: "Nagad (Instant Checkout)", value: "Nagad" },
+  { label: "Credit / Debit Card (Stripe)", value: "Credit / Debit Card" },
+];
 
 const DEMO_DEPOSITS = [
   {
@@ -244,17 +253,18 @@ export default function BuyerWalletPage() {
             ))}
           </TableBody>
         </Table>
-
-        <div className="p-4 border-t border-border">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={1}
-            totalItems={deposits.length}
-            pageSize={pageSize}
-            onPageChange={(p) => setCurrentPage(p)}
-          />
-        </div>
       </div>
+
+      {/* Pagination in its own Card */}
+      <Card className="bg-white p-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={1}
+          totalItems={deposits.length}
+          pageSize={pageSize}
+          onPageChange={(p) => setCurrentPage(p)}
+        />
+      </Card>
 
       {/* Deposit Modal */}
       {isDepositModalOpen && (
@@ -283,21 +293,16 @@ export default function BuyerWalletPage() {
               </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">
-                Select Payment Gateway
-              </label>
-              <Select
-                value={selectedMethod}
-                onChange={(e) => setSelectedMethod(e.target.value)}
-              >
-                <option value="USDT (TRC-20)">Crypto - USDT (TRC-20)</option>
-                <option value="Binance Pay">Binance Pay (Instant 0% Fee)</option>
-                <option value="bKash">bKash (Instant Checkout)</option>
-                <option value="Nagad">Nagad (Instant Checkout)</option>
-                <option value="Credit / Debit Card">Credit / Debit Card (Stripe)</option>
-              </Select>
-            </div>
+            <SearchableSelect
+              label="Select Payment Gateway"
+              value={selectedMethod}
+              onChange={(e) => setSelectedMethod(e.target.value)}
+              options={PAYMENT_GATEWAY_OPTIONS}
+              placeholder="Select Payment Gateway"
+              size="md"
+              clearable={false}
+              className="w-full text-xs"
+            />
 
             <div className="p-3 bg-gray-50 rounded-xl border border-border text-xs text-gray-600 flex items-start gap-2">
               <ShieldCheck size={16} className="text-brand flex-shrink-0 mt-0.5" />

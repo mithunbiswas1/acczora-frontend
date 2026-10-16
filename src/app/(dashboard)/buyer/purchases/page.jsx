@@ -24,9 +24,10 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import CredentialViewer from "@/components/ui/CredentialViewer";
@@ -146,6 +147,11 @@ export default function BuyerPurchasesPage() {
     ),
   ];
 
+  const categoryOptions = categories.map((c) => ({
+    label: c === "all" ? "All Categories" : c,
+    value: c,
+  }));
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -181,21 +187,18 @@ export default function BuyerPurchasesPage() {
 
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Caption className="text-gray-400 font-medium">Category:</Caption>
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={categoryFilter}
             onChange={(e) => {
               setCategoryFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-auto"
-          >
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c === "all" ? "All Categories" : c}
-              </option>
-            ))}
-          </Select>
+            options={categoryOptions}
+            placeholder="All Categories"
+            size="sm"
+            clearable={false}
+            className="w-40"
+          />
         </div>
       </div>
 
@@ -273,19 +276,22 @@ export default function BuyerPurchasesPage() {
                 ))}
               </TableBody>
             </Table>
-
-            <div className="p-4 border-t border-border">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={(p) => setCurrentPage(p)}
-              />
-            </div>
           </>
         )}
       </div>
+
+      {/* Pagination in its own Card */}
+      {paginated.length > 0 && (
+        <Card className="bg-white p-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(p) => setCurrentPage(p)}
+          />
+        </Card>
+      )}
 
       {/* Credential Viewer Modal */}
       {isViewerModalOpen && selectedItem && (

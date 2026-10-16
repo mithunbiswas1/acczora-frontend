@@ -22,15 +22,24 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Typography from "@/components/ui/Typography";
 import Input from "@/components/ui/Input";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import Textarea from "@/components/ui/Textarea";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { toast } from "sonner";
+
+const WITHDRAWAL_STATUS_OPTIONS = [
+  { label: "All Requests", value: "all" },
+  { label: "Pending Only", value: "pending" },
+  { label: "Completed", value: "completed" },
+  { label: "Rejected", value: "rejected" },
+];
 
 const INITIAL_WITHDRAWALS = [
   {
@@ -209,20 +218,18 @@ export default function AdminWithdrawalsPage() {
 
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="text-xs text-gray-400 font-medium">Status:</span>
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-auto"
-          >
-            <option value="all">All Requests</option>
-            <option value="pending">Pending Only</option>
-            <option value="completed">Completed</option>
-            <option value="rejected">Rejected</option>
-          </Select>
+            options={WITHDRAWAL_STATUS_OPTIONS}
+            placeholder="All Requests"
+            size="sm"
+            clearable={false}
+            className="w-40"
+          />
         </div>
       </div>
 
@@ -316,19 +323,22 @@ export default function AdminWithdrawalsPage() {
                 ))}
               </TableBody>
             </Table>
-
-            <div className="p-4 border-t border-border">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={(p) => setCurrentPage(p)}
-              />
-            </div>
           </>
         )}
       </div>
+
+      {/* Pagination in its own Card */}
+      {paginated.length > 0 && (
+        <Card className="bg-white p-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(p) => setCurrentPage(p)}
+          />
+        </Card>
+      )}
 
       {/* Approve Modal */}
       {isApproveModalOpen && selectedWithdrawal && (
@@ -403,16 +413,14 @@ export default function AdminWithdrawalsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">
-                Rejection Reason <span className="text-rose-500">*</span>
-              </label>
-              <textarea
+              <Textarea
                 required
+                label="Rejection Reason"
                 rows={3}
                 placeholder="e.g. Wallet address is invalid or flagged. Please provide a verified Binance Pay ID."
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full p-3 rounded-xl border border-border text-xs text-gray-900 focus:outline-none focus:border-rose-500"
+                className="w-full text-xs"
               />
             </div>
 

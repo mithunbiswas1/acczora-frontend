@@ -3,7 +3,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Upload,
@@ -13,9 +12,9 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   Loader2,
-  ArrowLeft,
   FileText,
 } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import {
   Card,
   CardHeader,
@@ -359,32 +358,15 @@ export default function ProductForm({
 
   return (
     <div className="max-w-4xl mx-auto py-6 sm:py-8 space-y-7 pb-20">
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-xs text-gray-500">
-        <Link
-          href={basePath}
-          className="hover:text-gray-900 transition-colors flex items-center gap-1"
-        >
-          <ArrowLeft size={13} />
-          <span>Products</span>
-        </Link>
-        <span>/</span>
-        <span className="text-gray-900 font-medium">
-          {mode === "edit" ? "Edit Product" : "Add Products"}
-        </span>
-      </div>
-
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-          {mode === "edit" ? "Edit Product" : "Add Product"}
-        </h1>
-        <p className="text-xs text-gray-400 mt-1">
-          {mode === "edit"
+      {/* Page Header */}
+      <PageHeader
+        title={mode === "edit" ? "Edit Product" : "Add Product"}
+        description={
+          mode === "edit"
             ? "Update your product details and credentials."
-            : "Create a new product for your store."}
-        </p>
-      </div>
+            : "Create a new product for your store."
+        }
+      />
 
       {/* =========================================================================
           SECTION 1: BASIC INFORMATION

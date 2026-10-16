@@ -24,6 +24,8 @@ const SearchableSelect = ({
   helperText,
   disabled = false,
   clearable = true,
+  showDescription = false,
+  size = "md",
   className,
   ...props
 }) => {
@@ -34,15 +36,17 @@ const SearchableSelect = ({
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
-  // Normalize options to { label, value, raw }
+  // Normalize options to { label, value, icon, description, raw }
   const normalizedOptions = useMemo(() => {
-    return options.map((opt) => {
+    return (Array.isArray(options) ? options : []).map((opt) => {
       const val = opt.value ?? opt._id ?? opt.id ?? opt.method_name ?? opt;
       const lbl = opt.label ?? opt.name ?? opt.method_name ?? String(val);
+      const icon = opt.icon || opt.image;
       return {
         label: lbl,
-        value: val,
-        icon: opt.icon,
+        value: String(val ?? ""),
+        icon: icon,
+        image: icon,
         description: opt.description,
         cost: opt.cost,
         raw: opt,
@@ -52,7 +56,8 @@ const SearchableSelect = ({
 
   // Find currently selected option
   const selectedOption = useMemo(() => {
-    return normalizedOptions.find((opt) => String(opt.value) === String(value));
+    if (value === undefined || value === null) return null;
+    return normalizedOptions.find((opt) => String(opt.value) === String(value)) || null;
   }, [normalizedOptions, value]);
 
   // Sync display query with selected option when closed
@@ -65,11 +70,18 @@ const SearchableSelect = ({
   // Filter options based on typed query in the field
   const filteredOptions = useMemo(() => {
     if (!query.trim()) return normalizedOptions;
+    // When query matches the selected option's label exactly, show full list so user can change selection
+    if (
+      selectedOption &&
+      query.trim().toLowerCase() === selectedOption.label.trim().toLowerCase()
+    ) {
+      return normalizedOptions;
+    }
     const cleanQuery = query.toLowerCase().trim();
     return normalizedOptions.filter((opt) =>
       opt.label.toLowerCase().includes(cleanQuery)
     );
-  }, [normalizedOptions, query]);
+  }, [normalizedOptions, query, selectedOption]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -165,6 +177,12 @@ const SearchableSelect = ({
     }
   };
 
+  const sizeClasses = {
+    sm: "h-9 text-xs px-2.5",
+    md: "h-11 text-xs sm:text-sm px-3.5",
+    lg: "h-12 text-sm px-4",
+  };
+
   return (
     <div className={cn("space-y-1.5 w-full", className)}>
       {label && (
@@ -186,7 +204,8 @@ const SearchableSelect = ({
             }
           }}
           className={cn(
-            "flex items-center h-11 px-3.5 rounded-xl border bg-white transition-all shadow-xs cursor-text",
+            "flex items-center rounded-xl border bg-white transition-all shadow-xs cursor-text",
+            sizeClasses[size] || sizeClasses.md,
             isOpen
               ? "border-[#5b52f9] ring-2 ring-[#5b52f9]/20"
               : "border-border hover:border-gray-400",
@@ -194,14 +213,29 @@ const SearchableSelect = ({
             disabled && "opacity-50 bg-gray-50 cursor-not-allowed"
           )}
         >
-          {/* Leading Search Icon */}
-          <Search
-            size={15}
-            className={cn(
-              "mr-2.5 flex-shrink-0 transition-colors",
-              isOpen ? "text-[#5b52f9]" : "text-gray-400"
-            )}
-          />
+          {/* Leading Icon: Selected Option Image/Icon or Search Icon */}
+          {selectedOption?.icon && !isOpen ? (
+            typeof selectedOption.icon === "string" ? (
+              <img
+                src={selectedOption.icon || "/review_avater.jpg"}
+                alt={selectedOption.label}
+                className="w-5 h-5 rounded-md object-cover flex-shrink-0 mr-2"
+                onError={(e) => {
+                  e.currentTarget.src = "/review_avater.jpg";
+                }}
+              />
+            ) : (
+              <span className="flex-shrink-0 mr-2">{selectedOption.icon}</span>
+            )
+          ) : (
+            <Search
+              size={15}
+              className={cn(
+                "mr-2.5 flex-shrink-0 transition-colors",
+                isOpen ? "text-[#5b52f9]" : "text-gray-400"
+              )}
+            />
+          )}
 
           {/* Direct In-Field Search Input */}
           <input
@@ -212,6 +246,9 @@ const SearchableSelect = ({
             disabled={disabled}
             value={query}
             placeholder={placeholder}
+            onClick={() => {
+              if (!isOpen) setIsOpen(true);
+            }}
             onFocus={(e) => {
               setIsOpen(true);
               e.target.select();
@@ -245,7 +282,7 @@ const SearchableSelect = ({
               onClick={(e) => {
                 e.stopPropagation();
                 if (!disabled) {
-                  setIsOpen(!isOpen);
+                  setIsOpen((prev) => !prev);
                   if (!isOpen && inputRef.current) {
                     inputRef.current.focus();
                   }
@@ -291,12 +328,23 @@ const SearchableSelect = ({
                             : "text-gray-700 hover:bg-gray-50"
                         )}
                       >
-                        <div className="flex items-center gap-2 truncate">
-                          {option.icon && (
-                            <span className="flex-shrink-0">{option.icon}</span>
-                          )}
-                          <span className="truncate">{option.label}</span>
-                          {option.description && (
+                        <div className="flex items-center gap-2.5 truncate">
+                          {option.icon ? (
+                            typeof option.icon === "string" ? (
+                              <img
+                                src={option.icon}
+                                alt={option.label}
+                                className="w-6 h-6 rounded-lg object-cover flex-shrink-0 border border-gray-100"
+                                onError={(e) => {
+                                  e.currentTarget.src = "/review_avater.jpg";
+                                }}
+                              />
+                            ) : (
+                              <span className="flex-shrink-0">{option.icon}</span>
+                            )
+                          ) : null}
+                          <span className="truncate font-medium text-gray-800">{option.label}</span>
+                          {showDescription && option.description && (
                             <span className="text-[11px] text-gray-400 truncate">
                               ({option.description})
                             </span>
@@ -311,7 +359,7 @@ const SearchableSelect = ({
                 </ul>
               ) : (
                 <div className="px-4 py-5 text-center text-xs text-gray-400">
-                  No matching options for &quot;{query}&quot;
+                  {query ? `No matching options for "${query}"` : "No options available"}
                 </div>
               )}
             </div>

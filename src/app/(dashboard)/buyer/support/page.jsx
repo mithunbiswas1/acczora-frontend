@@ -26,9 +26,17 @@ import {
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import Textarea from "@/components/ui/Textarea";
 import { Typography, H2, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
+
+const BUYER_SUPPORT_CATEGORIES = [
+  { label: "Account Credentials Stopped Working", value: "Replacement Warranty" },
+  { label: "License / Product Key Invalid", value: "Invalid Key" },
+  { label: "Payment or Billing Issue", value: "Billing" },
+  { label: "Other Question", value: "General" },
+];
 
 const BUYER_TICKETS = [
   {
@@ -243,19 +251,16 @@ export default function BuyerSupportPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-700">Category</label>
-              <Select
-                value={newTicket.category}
-                onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
-                className="w-full text-xs"
-              >
-                <option value="Replacement Warranty">Account Credentials Stopped Working</option>
-                <option value="Invalid Key">License / Product Key Invalid</option>
-                <option value="Billing">Payment or Billing Issue</option>
-                <option value="General">Other Question</option>
-              </Select>
-            </div>
+            <SearchableSelect
+              label="Category"
+              value={newTicket.category}
+              onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
+              options={BUYER_SUPPORT_CATEGORIES}
+              placeholder="Select Category"
+              size="md"
+              clearable={false}
+              className="w-full text-xs"
+            />
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-700">Subject</label>
@@ -267,16 +272,14 @@ export default function BuyerSupportPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-700">Description</label>
-              <textarea
-                rows={4}
-                placeholder="Please describe what happened when you tried to use the account/key..."
-                value={newTicket.message}
-                onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
-                className="w-full text-xs p-3 border border-border rounded-xl focus:outline-none focus:border-brand"
-              />
-            </div>
+            <Textarea
+              label="Description"
+              rows={4}
+              placeholder="Please describe what happened when you tried to use the account/key..."
+              value={newTicket.message}
+              onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
+              className="w-full text-xs"
+            />
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button

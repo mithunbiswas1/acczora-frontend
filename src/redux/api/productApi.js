@@ -7,102 +7,102 @@ export const productApi = apiSlice.injectEndpoints({
   overrideExisting: true,
 
   endpoints: (builder) => ({
-    // Get Products (Public search / catalog)
-    getProducts: builder.query({
-      query: (params = {}) => ({
-        url: endpoints.product.product,
+    // Get All Products (Public search / catalog with pagination & filters)
+    getAllProducts: builder.query({
+      query: (params) => ({
+        url: endpoints.product.getAllProducts,
+        method: "GET",
         params,
       }),
-      providesTags: (result) =>
-        result?.data?.products
-          ? [
-              ...result.data.products.map(({ _id }) => ({
-                type: "Product",
-                id: _id,
-              })),
-              { type: "Product", id: "LIST" },
-            ]
-          : [{ type: "Product", id: "LIST" }],
+      providesTags: ["Product"],
     }),
 
     // Get Seller's Products (Dashboard)
     getSellerProducts: builder.query({
-      query: (params = {}) => ({
-        url: endpoints.product.seller,
+      query: (params) => ({
+        url: endpoints.product.getSellerProducts,
+        method: "GET",
         params,
       }),
-      providesTags: (result) =>
-        result?.data?.products
-          ? [
-              ...result.data.products.map(({ _id }) => ({
-                type: "Product",
-                id: _id,
-              })),
-              { type: "Product", id: "LIST" },
-            ]
-          : [{ type: "Product", id: "LIST" }],
+      providesTags: ["Product"],
     }),
 
-    // Get Single Product
+    // Get Single Product by ID
     getProductById: builder.query({
       query: (id) => ({
-        url: `${endpoints.product.product}/${id}`,
+        url: `${endpoints.product.getProductById}/${id}`,
+        method: "GET",
       }),
-      providesTags: (result, error, id) => [{ type: "Product", id }],
+      providesTags: ["Product"],
+    }),
+
+    // Get Single Product by Slug
+    getProductBySlug: builder.query({
+      query: (slug) => ({
+        url: `${endpoints.product.getProductBySlug}/${slug}`,
+        method: "GET",
+      }),
+      providesTags: ["Product"],
     }),
 
     // Create Product
     createProduct: builder.mutation({
       query: (data) => ({
-        url: endpoints.product.product,
+        url: endpoints.product.createProduct,
         method: "POST",
         body: data,
       }),
-      invalidatesTags: [{ type: "Product", id: "LIST" }],
+      invalidatesTags: ["Product"],
     }),
 
     // Update Product
     updateProduct: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `${endpoints.product.product}/${id}`,
-        method: "PATCH",
+        url: `${endpoints.product.updateProduct}/${id}`,
+        method: "PUT",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: "Product", id },
-        { type: "Product", id: "LIST" },
-      ],
+      invalidatesTags: ["Product"],
     }),
 
     // Delete Product
     deleteProduct: builder.mutation({
       query: (id) => ({
-        url: `${endpoints.product.product}/${id}`,
+        url: `${endpoints.product.deleteProduct}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "Product", id: "LIST" }],
+      invalidatesTags: ["Product"],
     }),
 
     // Toggle Product Status
     toggleProductStatus: builder.mutation({
       query: (id) => ({
-        url: `${endpoints.product.product}/${id}/toggle`,
+        url: `${endpoints.product.toggleProductStatus}/${id}`,
         method: "PATCH",
       }),
-      invalidatesTags: (result, error, id) => [
-        { type: "Product", id },
-        { type: "Product", id: "LIST" },
-      ],
+      invalidatesTags: ["Product"],
+    }),
+
+    // Alias for existing dashboard pages
+    getProducts: builder.query({
+      query: (params) => ({
+        url: endpoints.product.getAllProducts,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Product"],
     }),
   }),
 });
 
 export const {
-  useGetProductsQuery,
+  useGetAllProductsQuery,
   useGetSellerProductsQuery,
   useGetProductByIdQuery,
+  useGetProductBySlugQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
   useToggleProductStatusMutation,
+  useGetProductsQuery,
 } = productApi;

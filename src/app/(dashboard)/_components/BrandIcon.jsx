@@ -13,6 +13,9 @@ export default function BrandIcon({ name, image, size = 32, className = "" }) {
           src={image}
           alt={name || "Product"}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = "/review_avater.jpg";
+          }}
         />
       </div>
     );

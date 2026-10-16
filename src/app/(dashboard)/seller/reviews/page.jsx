@@ -5,14 +5,25 @@
 import { useState } from "react";
 import { Star, MessageSquare, CheckCircle, Search, ThumbsUp } from "lucide-react";
 import Badge from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import Textarea from "@/components/ui/Textarea";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
+
+const SELLER_RATING_OPTIONS = [
+  { label: "All Ratings", value: "all" },
+  { label: "5 Stars ★★★★★", value: "5" },
+  { label: "4 Stars ★★★★", value: "4" },
+  { label: "3 Stars ★★★", value: "3" },
+  { label: "2 Stars ★★", value: "2" },
+  { label: "1 Star ★", value: "1" },
+];
 
 const DEMO_REVIEWS = [
   {
@@ -143,22 +154,18 @@ export default function SellerReviewsPage() {
 
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Caption className="text-gray-400 font-medium">Rating:</Caption>
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={starFilter}
             onChange={(e) => {
               setStarFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-auto"
-          >
-            <option value="all">All Ratings</option>
-            <option value="5">5 Stars ★★★★★</option>
-            <option value="4">4 Stars ★★★★</option>
-            <option value="3">3 Stars ★★★</option>
-            <option value="2">2 Stars ★★</option>
-            <option value="1">1 Star ★</option>
-          </Select>
+            options={SELLER_RATING_OPTIONS}
+            placeholder="All Ratings"
+            size="sm"
+            clearable={false}
+            className="w-40"
+          />
         </div>
       </div>
 
@@ -221,8 +228,11 @@ export default function SellerReviewsPage() {
             </div>
           ))
         )}
+      </div>
 
-        <div className="p-4 bg-white border-t border-border">
+      {/* Pagination in its own Card */}
+      {paginatedReviews.length > 0 && (
+        <Card className="bg-white p-4">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -230,8 +240,8 @@ export default function SellerReviewsPage() {
             pageSize={pageSize}
             onPageChange={(p) => setCurrentPage(p)}
           />
-        </div>
-      </div>
+        </Card>
+      )}
 
       {/* Reply Modal */}
       {replyingReview && (
@@ -247,16 +257,14 @@ export default function SellerReviewsPage() {
             </Caption>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">
-                Your Public Response
-              </label>
-              <textarea
+              <Textarea
                 required
+                label="Your Public Response"
                 rows={3}
                 placeholder="Thank you for your purchase! We are glad you enjoyed the service..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                className="w-full p-3 rounded-xl border border-border text-xs text-gray-900 focus:outline-none focus:border-brand"
+                className="w-full text-xs"
               />
             </div>
 

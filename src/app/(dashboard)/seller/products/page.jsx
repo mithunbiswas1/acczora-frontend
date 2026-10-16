@@ -2,17 +2,16 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Plus,
   SquarePen,
   Eye,
   Trash2,
-  Search,
-  ChevronDown,
   Copy,
   Check,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import BrandIcon from "../../_components/BrandIcon";
@@ -22,8 +21,11 @@ import Pagination from "@/components/ui/Pagination";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import LinkButton from "@/components/ui/LinkButton";
+import PageHeader from "@/components/ui/PageHeader";
 import SearchInput from "@/components/ui/SearchInput";
-import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import Textarea from "@/components/ui/Textarea";
+import EmptyState from "@/components/ui/EmptyState";
 import {
   Table,
   TableHeader,
@@ -38,69 +40,21 @@ import {
   useToggleProductStatusMutation,
   useDeleteProductMutation,
 } from "@/redux/api/productApi";
+import { useGetAllCategoriesQuery } from "@/redux/api/categoryApi";
 
-// Exact 5 Products from Mockup Screenshot
-const PIXEL_PERFECT_PRODUCTS = [
-  {
-    _id: "prod_netflix",
-    title: "Netflix Premium",
-    category: "Category",
-    platform: "Netflix",
-    price: 18,
-    originalPrice: "40.00",
-    salesCount: 50,
-    status: "Active",
-    date: "Sep 24, 2026",
-    credentials: "user1@netflix.com:SecretStream99\nuser2@netflix.com:PassStream22",
-  },
-  {
-    _id: "prod_canva",
-    title: "Canva Pro",
-    category: "Category",
-    platform: "Canva",
-    price: 12,
-    originalPrice: null,
-    salesCount: 60,
-    status: "Active",
-    date: "Oct 01, 2026",
-    credentials: "https://www.canva.com/brand/join?token=xYz789_edu",
-  },
-  {
-    _id: "prod_spotify",
-    title: "Spotify Premium",
-    category: "Category",
-    platform: "Spotify",
-    price: 8,
-    originalPrice: null,
-    salesCount: 70,
-    status: "Draft",
-    date: "Oct 15, 2026",
-    credentials: "spotify_family_invite@music.org:Sp0t1fyFam99",
-  },
-  {
-    _id: "prod_chatgpt",
-    title: "ChatGPT Plus — 1 Month",
-    category: "Category",
-    platform: "ChatGPT",
-    price: 16.5,
-    originalPrice: "20.00",
-    salesCount: 40,
-    status: "Suspend",
-    date: "Nov 01, 2026",
-    credentials: "ai_user1@auth.com:passSecret99",
-  },
-  {
-    _id: "prod_nordvpn",
-    title: "NordVPN — 2 Year",
-    category: "Category",
-    platform: "NordVPN",
-    price: 34.0,
-    originalPrice: null,
-    salesCount: 120,
-    status: "Deactivate",
-    date: "Nov 15, 2026",
-    credentials: "nord_user@secure.io:vpn_super_pass",
-  },
+const SELLER_PRODUCT_STATUS_OPTIONS = [
+  { label: "All Status", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Draft", value: "draft" },
+  { label: "Suspend", value: "suspend" },
+  { label: "Deactivate", value: "deactivate" },
+];
+
+const SELLER_PRODUCT_SORT_OPTIONS = [
+  { label: "Sort by", value: "newest" },
+  { label: "Most Sales", value: "sales" },
+  { label: "Price Low", value: "price_low" },
+  { label: "Price High", value: "price_high" },
 ];
 
 export default function SellerProductsPage() {
@@ -109,53 +63,96 @@ export default function SellerProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
 
-  // Selected state for Modals
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // RTK Query API
-  const { data: apiResponse } = useGetSellerProductsQuery();
+  // RTK Query API - Seller gets ONLY their own products
+  const { data: apiResponse, isLoading: isLoadingProducts } = useGetSellerProductsQuery();
+  const { data: categoriesResponse } = useGetAllCategoriesQuery();
   const [toggleStatus] = useToggleProductStatusMutation();
   const [deleteProduct] = useDeleteProductMutation();
 
-  const apiProducts = apiResponse?.data?.products || apiResponse?.data;
-  const productsList =
-    apiProducts && apiProducts.length > 0
-      ? apiProducts.map((p, idx) => ({
-          ...p,
-          date: p.createdAt
-            ? new Date(p.createdAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "2-digit",
-                year: "numeric",
-              })
-            : PIXEL_PERFECT_PRODUCTS[idx % PIXEL_PERFECT_PRODUCTS.length]?.date ||
-              "Sep 24, 2026",
-          salesCount: p.salesCount ?? 50,
-          category: p.category?.name || p.category || "Category",
-        }))
-      : PIXEL_PERFECT_PRODUCTS;
+  const realCategories = useMemo(() => {
+    const list = categoriesResponse?.data?.categories || categoriesResponse?.data || [];
+    return Array.isArray(list) ? list : [];
+  }, [categoriesResponse]);
+
+  const categoryOptions = useMemo(() => {
+    return [
+      { label: "All Categories", value: "all" },
+      ...realCategories.map((c) => ({ label: c.name, value: c.name })),
+    ];
+  }, [realCategories]);
+
+  const apiProducts = apiResponse?.data?.products || apiResponse?.data || [];
+  const rawProducts = useMemo(() => {
+    return Array.isArray(apiProducts) ? apiProducts : [];
+  }, [apiProducts]);
 
   // Search & Filter
-  const filteredProducts = productsList.filter((item) => {
-    const titleMatch = (item.title || "")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const catMatch =
-      categoryFilter === "all" ||
-      (item.category || item.platform || "")
-        .toLowerCase()
-        .includes(categoryFilter.toLowerCase());
-    const statusMatch =
-      statusFilter === "all" ||
-      (item.status || "").toLowerCase() === statusFilter.toLowerCase();
+  const filteredProducts = useMemo(() => {
+    let list = rawProducts.map((p) => ({
+      ...p,
+      date: p.createdAt
+        ? new Date(p.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          })
+        : "Recent",
+      salesCount: p.sales ?? p.salesCount ?? 0,
+      categoryName: p.category?.name || p.categoryName || p.category || "Uncategorized",
+      displayPrice: p.price ?? 0,
+      originalPrice: p.salePrice ? `$${p.price}` : null,
+      effectivePrice: p.salePrice ? p.salePrice : p.price ?? 0,
+    }));
 
-    return titleMatch && catMatch && statusMatch;
-  });
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      list = list.filter(
+        (p) =>
+          (p.title || "").toLowerCase().includes(q) ||
+          (p.slug || "").toLowerCase().includes(q) ||
+          (p.categoryName || "").toLowerCase().includes(q)
+      );
+    }
+
+    if (categoryFilter !== "all") {
+      list = list.filter(
+        (p) =>
+          (p.categoryName || "").toLowerCase() === categoryFilter.toLowerCase() ||
+          p.category?._id === categoryFilter ||
+          p.category === categoryFilter
+      );
+    }
+
+    if (statusFilter !== "all") {
+      list = list.filter(
+        (p) => (p.status || "active").toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
+    if (sortBy === "sales") {
+      list = [...list].sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0));
+    } else if (sortBy === "price_low") {
+      list = [...list].sort((a, b) => (Number(a.effectivePrice) || 0) - (Number(b.effectivePrice) || 0));
+    } else if (sortBy === "price_high") {
+      list = [...list].sort((a, b) => (Number(b.effectivePrice) || 0) - (Number(a.effectivePrice) || 0));
+    } else {
+      list = [...list].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+
+    return list;
+  }, [rawProducts, searchTerm, categoryFilter, statusFilter, sortBy]);
+
+  const isFiltering = Boolean(
+    searchTerm.trim() || categoryFilter !== "all" || statusFilter !== "all" || sortBy !== "newest"
+  );
 
   const totalItems = filteredProducts.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
@@ -169,18 +166,20 @@ export default function SellerProductsPage() {
       await toggleStatus(product._id).unwrap();
       toast.success(`Updated status for ${product.title}`);
     } catch {
-      toast.info(`Status toggled for ${product.title}`);
+      toast.error(`Failed to update status for ${product.title}`);
     }
   };
 
   const handleDelete = async () => {
     if (!selectedProduct) return;
+    setIsDeleting(true);
     try {
       await deleteProduct(selectedProduct._id).unwrap();
       toast.success("Product deleted successfully");
     } catch {
-      toast.info("Product removed from listings");
+      toast.error("Failed to delete product");
     } finally {
+      setIsDeleting(false);
       setIsDeleteModalOpen(false);
       setSelectedProduct(null);
     }
@@ -196,35 +195,29 @@ export default function SellerProductsPage() {
 
   return (
     <div className="space-y-5">
-      {/* 1. Header: Title, Subtitle, and Add Product CTA */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-[22px] sm:text-2xl font-bold text-gray-900 tracking-tight">
-            Sellers
-          </h1>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Manage your products, listings, and availability.
-          </p>
-        </div>
-
-        <div>
+      {/* 1. Header: Page Title + Add Product Action */}
+      <PageHeader
+        title="Sellers"
+        description="Manage your products, listings, and availability."
+        action={
           <LinkButton
             href="/seller/products/add"
             variant="brand"
-            size="sm"
-            rounded="lg"
+            size="default"
+            rounded="xl"
+            className="gap-1.5 shadow-xs"
           >
-            <Plus size={14} className="stroke-[2.5]" />
+            <Plus size={15} className="stroke-[2.5]" />
             <span>Add Product</span>
           </LinkButton>
-        </div>
-      </div>
+        }
+      />
 
-      {/* 2. Search & Filter Bar */}
+      {/* 2. Search & Filter Bar (Outside Table Card) */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Search Input Box */}
         <SearchInput
-          placeholder="Search products..."
+          placeholder="Search"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -235,221 +228,272 @@ export default function SellerProductsPage() {
         />
 
         {/* 3 Dropdown Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Status Dropdown */}
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-auto"
-          >
-            <option value="all">Status</option>
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
-            <option value="suspend">Suspend</option>
-            <option value="deactivate">Deactivate</option>
-          </Select>
+            options={SELLER_PRODUCT_STATUS_OPTIONS}
+            placeholder="Status"
+            size="sm"
+            clearable={false}
+            className="w-32"
+          />
 
           {/* Category Dropdown */}
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={categoryFilter}
             onChange={(e) => {
               setCategoryFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-auto"
-          >
-            <option value="all">Category</option>
-            <option value="netflix">Streaming</option>
-            <option value="canva">Design</option>
-            <option value="spotify">Music</option>
-            <option value="chatgpt">AI Services</option>
-            <option value="nordvpn">VPN</option>
-          </Select>
+            options={categoryOptions}
+            placeholder="Category"
+            size="sm"
+            clearable={false}
+            className="w-36"
+          />
 
           {/* Sort by Dropdown */}
-          <Select
-            variant="filter"
+          <SearchableSelect
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-auto"
-          >
-            <option value="newest">Sort by</option>
-            <option value="sales">Most Sales</option>
-            <option value="price_low">Price Low</option>
-            <option value="price_high">Price High</option>
-          </Select>
+            options={SELLER_PRODUCT_SORT_OPTIONS}
+            placeholder="Sort by"
+            size="sm"
+            clearable={false}
+            className="w-36"
+          />
         </div>
       </div>
 
-      {/* 3. Products Table Card */}
-      <Card className="p-0 overflow-hidden border-border/80 shadow-xs">
-        {/* Card Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-bold text-gray-900">Products</h2>
-          <Link
-            href="/seller/products"
-            className="text-xs font-semibold text-brand hover:underline flex items-center gap-1"
-          >
-            View All →
-          </Link>
-        </div>
+      {/* 3. Products Table in Reusable Card */}
+      <Card className="p-0 overflow-hidden border border-border bg-white shadow-xs">
+        {isLoadingProducts ? (
+          <div className="py-24 flex flex-col items-center justify-center gap-2 text-gray-400">
+            <Loader2 size={26} className="animate-spin text-[#5b52f9]" />
+            <span className="text-xs">Loading your products...</span>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          isFiltering ? (
+            <EmptyState
+              variant="search"
+              itemType="products"
+              title="No products found"
+              description="We couldn't find any products matching your search or filters."
+              onClear={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+                setCategoryFilter("all");
+                setSortBy("newest");
+                setCurrentPage(1);
+              }}
+            />
+          ) : (
+            <EmptyState
+              variant="empty"
+              itemType="products"
+              title="No products yet"
+              description="Start selling by adding your first product."
+              actionHref="/seller/products/add"
+              actionLabel="Add Product"
+            />
+          )
+        ) : (
+          <>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-sm font-bold text-gray-900">
+                Products ({totalItems})
+              </h2>
+              <span className="text-xs text-gray-400">
+                Your store inventory
+              </span>
+            </div>
 
-        {/* Table Content */}
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-gray-100 text-xs font-normal text-gray-400">
-              <TableHead className="py-3 px-6 font-normal text-left">Product</TableHead>
-              <TableHead className="py-3 px-6 font-normal text-left">Amount</TableHead>
-              <TableHead className="py-3 px-6 font-normal text-left">Sals</TableHead>
-              <TableHead className="py-3 px-6 font-normal text-left">Status</TableHead>
-              <TableHead className="py-3 px-6 font-normal text-left">Date</TableHead>
-              <TableHead className="py-3 px-6 text-right"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody className="divide-y divide-gray-100/80 text-xs">
-            {paginatedProducts.map((product) => {
-              const s = (product.status || "").toLowerCase();
-              const isDeactivated = s === "deactivate" || s === "inactive";
-              const isSuspend = s === "suspend";
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-gray-100 text-xs font-normal text-gray-400">
+                    <TableHead className="py-3 px-6 font-normal text-left text-gray-400">
+                      Product
+                    </TableHead>
+                    <TableHead className="py-3 px-6 font-normal text-left text-gray-400">
+                      Amount
+                    </TableHead>
+                    <TableHead className="py-3 px-6 font-normal text-left text-gray-400">
+                      Sales
+                    </TableHead>
+                    <TableHead className="py-3 px-6 font-normal text-left text-gray-400">
+                      Status
+                    </TableHead>
+                    <TableHead className="py-3 px-6 font-normal text-left text-gray-400">
+                      Date
+                    </TableHead>
+                    <TableHead className="py-3 px-6 text-right"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="divide-y divide-gray-100/80 text-xs">
+                  {paginatedProducts.map((product) => {
+                    const s = (product.status || "active").toLowerCase();
+                    const isDeactivated = s === "deactivate" || s === "inactive";
+                    const isSuspend = s === "suspend";
 
-              return (
-                <TableRow
-                  key={product._id}
-                  className="hover:bg-gray-50/60 transition-colors"
-                >
-                  {/* Product Name + Icon + Category Subtitle */}
-                  <TableCell className="py-3.5 px-6">
-                    <div className="flex items-center gap-3">
-                      <BrandIcon
-                        name={product.platform || product.title}
-                        size={32}
-                      />
-                      <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 text-xs truncate">
-                          {product.title}
-                        </p>
-                        <p className="text-[11px] text-gray-400 truncate">
-                          {product.category || "Category"}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
+                    const displayImage =
+                      product.thumbnail ||
+                      product.media?.[0]?.url ||
+                      product.images?.[0] ||
+                      (typeof product.media?.[0] === "string" ? product.media[0] : null);
 
-                  {/* Amount + Original Price */}
-                  <TableCell className="py-3.5 px-6">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-gray-900 text-xs">
-                        ${Number(product.price || 0).toFixed(2).replace(/\.00$/, "")}
-                      </span>
-                      {product.originalPrice && (
-                        <span className="text-[11px] text-gray-400 font-normal">
-                          {product.originalPrice}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-
-                  {/* Sals (Sales count) */}
-                  <TableCell className="py-3.5 px-6 font-normal text-gray-600">
-                    {product.salesCount ?? 50}
-                  </TableCell>
-
-                  {/* Status Pill matching mockup colors */}
-                  <TableCell className="py-3.5 px-6">
-                    <Badge variant={s} size="sm">
-                      {s === "active" ? "Active" : s === "draft" ? "Draft" : s === "suspend" ? "Suspend" : "Deactivate"}
-                    </Badge>
-                  </TableCell>
-
-                  {/* Date */}
-                  <TableCell className="py-3.5 px-6 text-gray-500 font-normal whitespace-nowrap">
-                    {product.date || "Sep 24, 2026"}
-                  </TableCell>
-
-                  {/* Actions: Edit, View, Status Circle, Trash */}
-                  <TableCell className="py-3.5 px-6 text-right whitespace-nowrap">
-                    <div className="inline-flex items-center gap-2">
-                      {/* 1. Edit (Square with pencil) */}
-                      <Link
-                        href={`/seller/products/edit/${product._id}`}
-                        className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
-                        title="Edit Product"
+                    return (
+                      <TableRow
+                        key={product._id}
+                        className="hover:bg-gray-50/60 transition-colors"
                       >
-                        <SquarePen size={14} className="stroke-[1.8]" />
-                      </Link>
-
-                      {/* 2. View (Eye) */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setIsStockModalOpen(true);
-                        }}
-                        className="p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
-                        title="View Credentials"
-                      >
-                        <Eye size={14} className="stroke-[1.8]" />
-                      </button>
-
-                      {/* 3. Status Circle Button (Red ✕ if active/draft, Gray ✕ if suspend, Green ✓ if deactivated) */}
-                      <button
-                        type="button"
-                        onClick={() => handleToggle(product)}
-                        className="p-0.5 cursor-pointer hover:scale-105 transition-transform"
-                        title={isDeactivated ? "Activate Product" : "Deactivate Product"}
-                      >
-                        {isDeactivated ? (
-                          <div className="w-[18px] h-[18px] rounded-full bg-[#34d399] text-white flex items-center justify-center shadow-xs">
-                            <span className="text-[10px] font-bold leading-none select-none">✓</span>
+                        {/* Product Name + Icon + Category Subtitle */}
+                        <TableCell className="py-3.5 px-6">
+                          <div className="flex items-center gap-3">
+                            <BrandIcon
+                              name={product.platform || product.title}
+                              image={displayImage}
+                              size={32}
+                            />
+                            <div className="min-w-0">
+                              <p className="font-semibold text-gray-900 text-xs truncate">
+                                {product.title}
+                              </p>
+                              <p className="text-[11px] text-gray-400 truncate">
+                                {product.categoryName}
+                              </p>
+                            </div>
                           </div>
-                        ) : isSuspend ? (
-                          <div className="w-[18px] h-[18px] rounded-full bg-[#d1d5db] text-white flex items-center justify-center shadow-xs">
-                            <span className="text-[9px] font-bold leading-none select-none">✕</span>
-                          </div>
-                        ) : (
-                          <div className="w-[18px] h-[18px] rounded-full bg-[#f87171] text-white flex items-center justify-center shadow-xs">
-                            <span className="text-[9px] font-bold leading-none select-none">✕</span>
-                          </div>
-                        )}
-                      </button>
+                        </TableCell>
 
-                      {/* 4. Delete (Red Trash) */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setIsDeleteModalOpen(true);
-                        }}
-                        className="p-1 text-[#f87171] hover:text-[#ef4444] transition-colors cursor-pointer"
-                        title="Delete Product"
-                      >
-                        <Trash2 size={14} className="stroke-[1.8]" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                        {/* Amount */}
+                        <TableCell className="py-3.5 px-6">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-gray-900 text-xs">
+                              ${Number(product.effectivePrice).toFixed(2).replace(/\.00$/, "")}
+                            </span>
+                            {product.originalPrice && (
+                              <span className="text-[11px] text-gray-400 font-normal line-through">
+                                {product.originalPrice}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
 
-        {/* Pagination Footer */}
-        <div className="px-6 py-3.5 border-t border-gray-100 bg-white">
+                        {/* Sales */}
+                        <TableCell className="py-3.5 px-6 font-normal text-gray-600">
+                          {product.salesCount}
+                        </TableCell>
+
+                        {/* Status Pill */}
+                        <TableCell className="py-3.5 px-6">
+                          <Badge variant={s} size="sm">
+                            {s === "active"
+                              ? "Active"
+                              : s === "draft"
+                              ? "Draft"
+                              : s === "suspend"
+                              ? "Suspend"
+                              : s === "deactivate"
+                              ? "Deactivate"
+                              : product.status || "Active"}
+                          </Badge>
+                        </TableCell>
+
+                        {/* Date */}
+                        <TableCell className="py-3.5 px-6 text-gray-500 font-normal whitespace-nowrap">
+                          {product.date}
+                        </TableCell>
+
+                        {/* Actions */}
+                        <TableCell className="py-3.5 px-6 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-2">
+                            {/* 1. Edit */}
+                            <Link
+                              href={`/seller/products/edit/${product._id}`}
+                              className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
+                              title="Edit Product"
+                            >
+                              <SquarePen size={14} className="stroke-[1.8]" />
+                            </Link>
+
+                            {/* 2. View Credentials */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setIsStockModalOpen(true);
+                              }}
+                              className="p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+                              title="View Account Stock"
+                            >
+                              <Eye size={14} className="stroke-[1.8]" />
+                            </button>
+
+                            {/* 3. Status Circle Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggle(product)}
+                              className="p-0.5 cursor-pointer hover:scale-110 transition-transform"
+                              title={isDeactivated ? "Activate Product" : "Deactivate / Suspend Product"}
+                            >
+                              {isDeactivated ? (
+                                <div className="w-[18px] h-[18px] rounded-full bg-[#34d399] text-white flex items-center justify-center shadow-xs">
+                                  <span className="text-[10px] font-bold leading-none select-none">✓</span>
+                                </div>
+                              ) : isSuspend ? (
+                                <div className="w-[18px] h-[18px] rounded-full bg-[#d1d5db] text-white flex items-center justify-center shadow-xs">
+                                  <span className="text-[9px] font-bold leading-none select-none">✕</span>
+                                </div>
+                              ) : (
+                                <div className="w-[18px] h-[18px] rounded-full bg-[#f87171] text-white flex items-center justify-center shadow-xs">
+                                  <span className="text-[9px] font-bold leading-none select-none">✕</span>
+                                </div>
+                              )}
+                            </button>
+
+                            {/* 4. Delete */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setIsDeleteModalOpen(true);
+                              }}
+                              className="p-1 text-[#f87171] hover:text-[#ef4444] transition-colors cursor-pointer"
+                              title="Delete Product"
+                            >
+                              <Trash2 size={14} className="stroke-[1.8]" />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
+      </Card>
+
+      {/* 4. Pagination in its own Card */}
+      {totalItems > 0 && (
+        <Card className="bg-white p-4">
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.max(totalPages, 5)}
-            totalItems={totalItems || 25}
+            totalPages={totalPages}
+            totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={(page) => setCurrentPage(page)}
-            showAlways={true}
+            showAlways={totalItems > 0}
           />
-        </div>
-      </Card>
+        </Card>
+      )}
 
       {/* Stock Credentials Modal */}
       {isStockModalOpen && selectedProduct && (
@@ -460,53 +504,86 @@ export default function SellerProductsPage() {
             setSelectedProduct(null);
           }}
           title={selectedProduct.title}
+          maxWidth="max-w-md"
         >
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-3 rounded-xl border border-gray-200">
-              <span>
-                Available Stock:{" "}
-                <strong className="text-gray-900">
-                  {selectedProduct.stock ?? 24} Accounts
-                </strong>
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Digital Accounts in Stock
               </span>
-              <span>
-                Price:{" "}
-                <strong className="text-gray-900">${selectedProduct.price}</strong>
+              <span className="text-xs text-brand font-semibold">
+                {selectedProduct.uploadedInfo?.length || 1} Account(s)
               </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Digital Accounts Credentials:
-              </label>
-              <textarea
-                readOnly
-                rows={5}
-                value={
-                  selectedProduct.credentials ||
-                  "user1@netflix.com:SecretStream99\nuser2@netflix.com:PassStream22"
-                }
-                className="w-full font-mono text-xs p-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 focus:outline-none"
-              />
-            </div>
+            {selectedProduct.uploadedInfo && selectedProduct.uploadedInfo.length > 0 ? (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {selectedProduct.uploadedInfo.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-700">Account #{idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleCopyCredentials(
+                            `Email: ${item.email}\nPassword: ${item.password}${
+                              item.recoveryEmail ? `\nRecovery: ${item.recoveryEmail}` : ""
+                            }${item.twoFactor ? `\n2FA: ${item.twoFactor}` : ""}`
+                          )
+                        }
+                        className="text-brand hover:underline font-medium text-[11px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Copy size={11} /> Copy All
+                      </button>
+                    </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <Button
-                type="button"
-                variant="brand"
-                size="sm"
-                rounded="lg"
-                onClick={() =>
-                  handleCopyCredentials(
-                    selectedProduct.credentials ||
-                      "user1@netflix.com:SecretStream99\nuser2@netflix.com:PassStream22"
-                  )
-                }
-              >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copied ? "Copied!" : "Copy Credentials"}</span>
-              </Button>
-            </div>
+                    <div className="font-mono text-gray-600 space-y-0.5">
+                      <div>
+                        <span className="text-gray-400">Email: </span>
+                        {item.email}
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Password: </span>
+                        {item.password}
+                      </div>
+                      {item.recoveryEmail && (
+                        <div>
+                          <span className="text-gray-400">Recovery: </span>
+                          {item.recoveryEmail}
+                        </div>
+                      )}
+                      {item.twoFactor && (
+                        <div>
+                          <span className="text-gray-400">2FA: </span>
+                          {item.twoFactor}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Textarea
+                  value={selectedProduct.credentials || "No credentials uploaded for this product."}
+                  readOnly
+                  rows={4}
+                  className="font-mono text-xs bg-gray-50 text-gray-700 cursor-text resize-none"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopyCredentials(selectedProduct.credentials)}
+                  className="w-full gap-1.5 text-xs font-semibold"
+                >
+                  {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                  <span>{copied ? "Copied to Clipboard!" : "Copy Raw Credentials"}</span>
+                </Button>
+              </div>
+            )}
           </div>
         </Modal>
       )}
@@ -519,10 +596,10 @@ export default function SellerProductsPage() {
           setSelectedProduct(null);
         }}
         onConfirm={handleDelete}
-        title="Delete Product"
+        title="Delete Product?"
         itemName={selectedProduct?.title}
-        itemType="Product"
-        message="Are you sure you want to delete this product? All listings and uploaded credentials associated with this product will be removed. This action cannot be undone."
+        itemType="product"
+        isLoading={isDeleting}
       />
     </div>
   );

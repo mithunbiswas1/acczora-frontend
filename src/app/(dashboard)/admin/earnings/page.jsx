@@ -12,6 +12,7 @@ import {
   Calendar,
 } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import {
   Table,
@@ -180,17 +181,18 @@ export default function AdminEarningsPage() {
             ))}
           </TableBody>
         </Table>
-
-        <div className="p-4 border-t border-border">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={1}
-            totalItems={PLATFORM_MONTHLY_EARNINGS.length}
-            pageSize={pageSize}
-            onPageChange={(p) => setCurrentPage(p)}
-          />
-        </div>
       </div>
+
+      {/* Pagination in its own Card */}
+      <Card className="bg-white p-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={1}
+          totalItems={PLATFORM_MONTHLY_EARNINGS.length}
+          pageSize={pageSize}
+          onPageChange={(p) => setCurrentPage(p)}
+        />
+      </Card>
     </div>
   );
 }

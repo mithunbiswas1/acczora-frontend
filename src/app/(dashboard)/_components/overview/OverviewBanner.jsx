@@ -1,7 +1,7 @@
 // src/app/(dashboard)/_components/overview/OverviewBanner.jsx
 
 import React from "react";
-import Link from "next/link";
+import LinkButton from "@/components/ui/LinkButton";
 import { StoreEyeIcon } from "@/icons";
 
 export default function OverviewBanner({
@@ -23,13 +23,16 @@ export default function OverviewBanner({
       </div>
 
       <div className="flex-shrink-0">
-        <Link
+        <LinkButton
           href={actionHref}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-brand text-xs font-semibold shadow-xs hover:bg-gray-50 hover:border-brand/30 transition-all"
+          variant="outline-border"
+          size="sm"
+          rounded="xl"
+          className="text-brand hover:text-brand gap-2"
         >
           <StoreEyeIcon size={16} className="text-brand" />
           <span>{actionLabel}</span>
-        </Link>
+        </LinkButton>
       </div>
     </div>
   );

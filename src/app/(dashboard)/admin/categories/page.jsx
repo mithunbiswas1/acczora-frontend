@@ -16,10 +16,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import {
-  useGetCategoriesQuery,
+  useGetAllCategoriesQuery,
   useDeleteCategoryMutation,
+  useToggleCategoryStatusMutation,
 } from "@/redux/api/categoryApi";
-import { useGetSubcategoriesQuery } from "@/redux/api/subcategoryApi";
+import { useGetAllSubcategoriesQuery } from "@/redux/api/subcategoryApi";
 import { Card } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import {
@@ -32,7 +33,18 @@ import {
 } from "@/components/ui/Table";
 import Pagination from "@/components/ui/Pagination";
 import DeleteModal from "@/components/ui/DeleteModal";
+import PageHeader from "@/components/ui/PageHeader";
+import LinkButton from "@/components/ui/LinkButton";
+import SearchInput from "@/components/ui/SearchInput";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import EmptyState from "@/components/ui/EmptyState";
 import { toast } from "sonner";
+
+const STATUS_OPTIONS = [
+  { label: "All Status", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Inactive", value: "inactive" },
+];
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,15 +61,34 @@ export default function CategoriesPage() {
     data: categoriesData,
     isLoading: isLoadingCats,
     refetch: refetchCats,
-  } = useGetCategoriesQuery({ all: "true" });
+  } = useGetAllCategoriesQuery();
 
   const {
     data: subcategoriesData,
     refetch: refetchSubs,
-  } = useGetSubcategoriesQuery({ all: "true" });
+  } = useGetAllSubcategoriesQuery();
 
   // Mutations
   const [deleteCategory, { isLoading: isDeletingCat }] = useDeleteCategoryMutation();
+  const [toggleCategoryStatus] = useToggleCategoryStatusMutation();
+  const [togglingId, setTogglingId] = useState(null);
+
+  // Status Toggle Handler
+  const handleToggleStatus = async (item) => {
+    try {
+      setTogglingId(item._id);
+      const res = await toggleCategoryStatus(item._id).unwrap();
+      const updatedStatus = res?.data?.is_active ?? !item.is_active;
+      toast.success(
+        res?.message ||
+        `Category "${item.name}" ${updatedStatus ? "activated" : "deactivated"} successfully`
+      );
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to update category status");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   const rawCategories = categoriesData?.data?.categories || [];
   const rawSubcategories = subcategoriesData?.data?.subcategories || [];
@@ -91,7 +122,14 @@ export default function CategoriesPage() {
 
   // Filtered Categories
   const filteredCategories = useMemo(() => {
-    return rawCategories.filter((item) => {
+    let list = [...rawCategories];
+
+    // Enforce LIFO (Last In, First Out - Newest first)
+    list.sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+
+    return list.filter((item) => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesName = item.name?.toLowerCase().includes(query);
@@ -149,185 +187,166 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* 1. Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Categories
-          </h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Manage root product categories. Looking for sub-categories? Visit{" "}
-            <Link
-              href="/admin/subcategories"
-              className="text-[#5b52f9] font-medium hover:underline inline-flex items-center gap-0.5"
-            >
-              <span>Sub-Categories</span>
-              <ExternalLink size={11} />
-            </Link>
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          <Link
-            href="/admin/subcategories"
-            className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
-          >
-            <FolderTree size={15} className="text-[#5b52f9]" />
-            <span>Sub-Categories</span>
-          </Link>
-
-          <Link
-            href="/admin/categories/add"
-            className="px-4 py-2.5 rounded-xl bg-[#5b52f9] hover:bg-[#4f44eb] text-white text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
-          >
-            <Plus size={16} />
-            <span>Add Category</span>
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Categories"
+        description="Manage Categories and product specifications."
+      >
+        <LinkButton
+          href="/admin/categories/add"
+          variant="brand"
+          size="default"
+          rounded="xl"
+          className="gap-1.5 shadow-xs"
+        >
+          <Plus size={16} />
+          <span>Add Category</span>
+        </LinkButton>
+      </PageHeader>
 
       {/* 2. Top 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Total Categories */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">
             Total Categories
           </span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.totalCategories}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               Root product categories
             </span>
           </div>
         </Card>
 
         {/* Card 2: Active */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">Active</span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">Active</span>
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.activeCategories}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               Visible in marketplace
             </span>
           </div>
         </Card>
 
         {/* Card 3: Sub-categories Linked */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">
             Sub-categories Linked
           </span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.totalSubcategories}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               Total child sub-categories
             </span>
           </div>
         </Card>
 
         {/* Card 4: Inactive */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">Inactive</span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">Inactive</span>
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.inactiveCategories}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               Disabled categories
             </span>
           </div>
         </Card>
       </div>
 
-      {/* 3. Category Directory Container */}
-      <Card className="p-6 space-y-6">
-        {/* Search Bar & Dropdown Filters */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search
-              size={17}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search category name or slug..."
-              className="w-full h-11 pl-11 pr-4 rounded-xl bg-[#f0f2f5] border-0 text-xs sm:text-sm text-gray-900 placeholder:text-gray-500 font-normal focus:outline-none focus:ring-1 focus:ring-[#5b52f9]/30 transition-all"
-            />
-          </div>
+      {/* 3. Search Bar & Dropdown Filters (Outside Table Card) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search Input Component */}
+        <SearchInput
+          value={searchQuery}
+          onChange={handleSearchChange}
+          placeholder="Search category name or slug..."
+          className="flex-1 min-w-0"
+        />
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={handleStatusFilterChange}
-                className="h-11 pl-4 pr-8 rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-800 hover:bg-gray-50 focus:outline-none focus:border-[#5b52f9] appearance-none cursor-pointer transition-colors"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <ChevronDown
-                size={14}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-              />
+        {/* Status Filter Component */}
+        <SearchableSelect
+          value={statusFilter}
+          onChange={handleStatusFilterChange}
+          options={STATUS_OPTIONS}
+          placeholder="Filter Status"
+          size="md"
+          clearable={false}
+          className="w-full sm:w-44 flex-shrink-0"
+        />
+      </div>
+
+      {/* 4. Category Directory Table Card */}
+      <Card className="overflow-hidden border border-border bg-white">
+        {isLoadingCats ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-2 text-gray-400">
+            <Loader2 size={24} className="animate-spin text-[#5b52f9]" />
+            <span className="text-xs">Loading categories...</span>
+          </div>
+        ) : filteredCategories.length === 0 ? (
+          Boolean(searchQuery.trim() || statusFilter !== "all") ? (
+            <EmptyState
+              variant="search"
+              itemType="categories"
+              title="No categories found"
+              description="We couldn't find any categories matching your search or filters."
+              onClear={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+                setCurrentPage(1);
+              }}
+            />
+          ) : (
+            <EmptyState
+              variant="empty"
+              itemType="categories"
+              title="No categories yet"
+              description="Start organizing your marketplace by creating your first category."
+              actionHref="/admin/categories/add"
+              actionLabel="Add Category"
+            />
+          )
+        ) : (
+          <>
+            <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-900 tracking-tight">
+                Categories Directory
+              </h3>
+              <span className="text-xs text-gray-400">
+                {totalItems} total {totalItems === 1 ? "category" : "categories"}
+              </span>
             </div>
-          </div>
-        </div>
-
-        {/* Section Title */}
-        <h3 className="text-sm font-bold text-gray-900 tracking-tight pt-1">
-          Categories Directory
-        </h3>
-
-        {/* Table */}
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-gray-100 hover:bg-transparent">
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[40%]">
-                Category
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[20%]">
-                Sub-categories
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[20%]">
-                Updated
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[10%]">
-                Status
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 text-right w-[10%]">
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoadingCats ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
-                    <Loader2 size={24} className="animate-spin text-[#5b52f9]" />
-                    <span className="text-xs">Loading categories...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : paginatedCategories.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-xs text-gray-400">
-                  No categories found. Click &quot;Add Category&quot; to create one.
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedCategories.map((item) => (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-gray-100 hover:bg-transparent">
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[35%]">
+                      Category
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[20%]">
+                      Sub-categories
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[20%]">
+                      Updated
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[15%]">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 text-right w-[10%]">
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedCategories.map((item) => (
                 <TableRow
                   key={item._id}
                   className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/40 transition-colors"
@@ -335,19 +354,16 @@ export default function CategoriesPage() {
                   {/* Category Name and Icon */}
                   <TableCell className="py-4 px-4">
                     <div className="flex items-center gap-3">
-                      {item.icon || item.image ? (
-                        <div className="w-9 h-9 rounded-xl overflow-hidden shadow-xs flex-shrink-0 bg-gray-50 border border-gray-100">
-                          <img
-                            src={item.icon || item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#5b52f9] flex items-center justify-center font-bold text-xs flex-shrink-0">
-                          {item.name.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
+                      <div className="w-9 h-9 rounded-xl overflow-hidden shadow-xs flex-shrink-0 bg-gray-50 border border-gray-100">
+                        <img
+                          src={item.image || "/review_avater.jpg"}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/review_avater.jpg";
+                          }}
+                        />
+                      </div>
 
                       <div>
                         <span className="text-sm font-bold text-gray-900 block leading-snug">
@@ -362,18 +378,11 @@ export default function CategoriesPage() {
 
                   {/* Subcategories count */}
                   <TableCell className="py-4 px-4">
-                    <Link
-                      href={`/admin/subcategories?category=${item._id}`}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-gray-700 transition-colors"
-                      title="View sub-categories"
-                    >
-                      <FolderTree size={13} className="text-[#5b52f9]" />
-                      <span>{subcategoryCountMap[item._id] || 0} Sub-categories</span>
-                    </Link>
+                    <Badge>{subcategoryCountMap[item._id] || 0} Sub-categories</Badge>
                   </TableCell>
 
                   {/* Updated Date */}
-                  <TableCell className="py-4 px-4">
+                  < TableCell className="py-4 px-4" >
                     <span className="text-xs font-medium text-gray-800 block">
                       {new Date(item.updatedAt || Date.now()).toLocaleDateString("en-US", {
                         month: "short",
@@ -381,16 +390,23 @@ export default function CategoriesPage() {
                         year: "numeric",
                       })}
                     </span>
-                    <span className="text-[11px] text-gray-400 block font-normal mt-0.5">
-                      Recently updated
-                    </span>
                   </TableCell>
 
-                  {/* Status Pill */}
+                  {/* Status Toggle Switch + Pill */}
                   <TableCell className="py-4 px-4">
-                    <Badge variant={item.is_active !== false ? "active" : "inactive"}>
-                      {item.is_active !== false ? "Active" : "Inactive"}
-                    </Badge>
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(item)}
+                        disabled={togglingId === item._id}
+                        title={item.is_active !== false ? "Click to deactivate" : "Click to activate"}
+                        className="cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                      >
+                        <Badge variant={item.is_active !== false ? "active" : "inactive"} size="sm">
+                          {item.is_active !== false ? "Active" : "Inactive"}
+                        </Badge>
+                      </button>
+                    </div>
                   </TableCell>
 
                   {/* Actions: Edit, Delete */}
@@ -417,12 +433,16 @@ export default function CategoriesPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </>
+    )}
+  </Card>
 
-        {/* Dynamic Pagination Controls */}
+      {/* Pagination in its own Card */}
+      <Card className="bg-white p-4">
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -434,18 +454,19 @@ export default function CategoriesPage() {
       </Card>
 
       {/* Centralized Reusable Delete Confirmation Modal */}
-      <DeleteModal
+      < DeleteModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
           setItemToDelete(null);
-        }}
+        }
+        }
         onConfirm={handleConfirmDelete}
         title="Delete Category?"
         itemName={itemToDelete?.name}
         itemType="category"
         isLoading={isDeletingCat}
       />
-    </div>
+    </div >
   );
 }

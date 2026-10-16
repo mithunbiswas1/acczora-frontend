@@ -7,6 +7,8 @@ import { useSelector } from "react-redux";
 import { Save, Store, ShieldCheck, Mail, Bell, MessageCircle } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Typography, H3, P, Caption } from "@/components/ui/Typography";
 import { toast } from "sonner";
 
@@ -100,13 +102,13 @@ export default function SellerStoreSettingsPage() {
             </div>
 
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-gray-700">Store Bio / Description</label>
-              <textarea
+              <Textarea
+                label="Store Bio / Description"
                 name="bio"
                 rows={3}
                 value={settings.bio}
                 onChange={handleChange}
-                className="w-full text-xs p-3 border border-border rounded-xl focus:outline-none focus:border-brand"
+                className="w-full text-xs"
               />
             </div>
           </div>
@@ -124,15 +126,13 @@ export default function SellerStoreSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-700">
-              Default Auto-Delivery Message
-            </label>
-            <textarea
+            <Textarea
+              label="Default Auto-Delivery Message"
               name="autoDeliveryNote"
               rows={3}
               value={settings.autoDeliveryNote}
               onChange={handleChange}
-              className="w-full text-xs p-3 border border-border rounded-xl focus:outline-none focus:border-brand"
+              className="w-full text-xs"
             />
           </div>
         </div>
@@ -149,33 +149,39 @@ export default function SellerStoreSettingsPage() {
           </div>
 
           <div className="space-y-3">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="emailNotificationOnSale"
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="emailNotificationOnSale"
                 checked={settings.emailNotificationOnSale}
-                onChange={handleChange}
-                className="rounded border-gray-300 text-brand focus:ring-brand"
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    emailNotificationOnSale: !!checked,
+                  }))
+                }
               />
-              <div>
+              <label htmlFor="emailNotificationOnSale" className="cursor-pointer">
                 <p className="text-xs font-semibold text-gray-800">Email alert on new order sale</p>
                 <p className="text-[11px] text-gray-400">Receive instant notification whenever a buyer orders</p>
-              </div>
-            </label>
+              </label>
+            </div>
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="emailNotificationOnDispute"
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="emailNotificationOnDispute"
                 checked={settings.emailNotificationOnDispute}
-                onChange={handleChange}
-                className="rounded border-gray-300 text-brand focus:ring-brand"
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    emailNotificationOnDispute: !!checked,
+                  }))
+                }
               />
-              <div>
+              <label htmlFor="emailNotificationOnDispute" className="cursor-pointer">
                 <p className="text-xs font-semibold text-gray-800">Email alert on support claim or dispute</p>
                 <p className="text-[11px] text-gray-400">Get notified if an account warranty issue is filed</p>
-              </div>
-            </label>
+              </label>
+            </div>
           </div>
         </div>
 

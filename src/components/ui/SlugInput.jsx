@@ -42,7 +42,6 @@ export default function SlugInput({
   label = "Slug",
   required = false,
   placeholder = "slug-name",
-  helperText = "Lowercase alphanumeric characters and hyphens only.",
   error,
   disabled = false,
   className = "",
@@ -139,11 +138,10 @@ export default function SlugInput({
 
       {/* Input Group with Prefix */}
       <div
-        className={`flex items-center h-11 w-full rounded-xl border bg-white overflow-hidden transition-all shadow-xs ${
-          error
+        className={`flex items-center h-11 w-full rounded-xl border bg-white overflow-hidden transition-all shadow-xs ${error
             ? "border-rose-400 ring-1 ring-rose-400"
             : "border-border hover:border-gray-400 focus-within:border-[#5b52f9] focus-within:ring-1 focus-within:ring-[#5b52f9]/20"
-        } ${disabled ? "opacity-50 bg-gray-50 cursor-not-allowed" : ""}`}
+          } ${disabled ? "opacity-50 bg-gray-50 cursor-not-allowed" : ""}`}
       >
         {/* Prefix Pill */}
         <div className="h-full px-3.5 bg-gray-50 border-r border-border text-gray-500 text-xs font-mono select-none flex items-center gap-1 flex-shrink-0">
@@ -167,8 +165,6 @@ export default function SlugInput({
       {/* Error or Helper text */}
       {error ? (
         <p className="text-[11px] text-rose-500 font-medium">{error}</p>
-      ) : helperText ? (
-        <p className="text-[11px] text-gray-400">{helperText}</p>
       ) : null}
     </div>
   );

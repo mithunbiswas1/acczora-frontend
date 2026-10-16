@@ -17,10 +17,11 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import {
-  useGetSubcategoriesQuery,
+  useGetAllSubcategoriesQuery,
   useDeleteSubcategoryMutation,
+  useToggleSubcategoryStatusMutation,
 } from "@/redux/api/subcategoryApi";
-import { useGetCategoriesQuery } from "@/redux/api/categoryApi";
+import { useGetAllCategoriesQuery } from "@/redux/api/categoryApi";
 import { Card } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import {
@@ -33,7 +34,18 @@ import {
 } from "@/components/ui/Table";
 import Pagination from "@/components/ui/Pagination";
 import DeleteModal from "@/components/ui/DeleteModal";
+import PageHeader from "@/components/ui/PageHeader";
+import LinkButton from "@/components/ui/LinkButton";
+import SearchInput from "@/components/ui/SearchInput";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+import EmptyState from "@/components/ui/EmptyState";
 import { toast } from "sonner";
+
+const STATUS_OPTIONS = [
+  { label: "All Status", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Inactive", value: "inactive" },
+];
 
 export default function SubcategoriesPage() {
   const searchParams = useSearchParams();
@@ -54,15 +66,41 @@ export default function SubcategoriesPage() {
     data: subcategoriesData,
     isLoading: isLoadingSubs,
     refetch: refetchSubs,
-  } = useGetSubcategoriesQuery({ all: "true" });
+  } = useGetAllSubcategoriesQuery();
 
-  const { data: categoriesData } = useGetCategoriesQuery({ all: "true" });
+  const { data: categoriesData } = useGetAllCategoriesQuery();
 
   // Mutations
   const [deleteSubcategory, { isLoading: isDeletingSub }] = useDeleteSubcategoryMutation();
+  const [toggleSubcategoryStatus] = useToggleSubcategoryStatusMutation();
+  const [togglingId, setTogglingId] = useState(null);
+
+  // Status Toggle Handler
+  const handleToggleStatus = async (item) => {
+    try {
+      setTogglingId(item._id);
+      const res = await toggleSubcategoryStatus(item._id).unwrap();
+      const updatedStatus = res?.data?.is_active ?? !item.is_active;
+      toast.success(
+        res?.message ||
+        `Sub-category "${item.name}" ${updatedStatus ? "activated" : "deactivated"} successfully`
+      );
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to update sub-category status");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   const rawSubcategories = subcategoriesData?.data?.subcategories || [];
   const rawCategories = categoriesData?.data?.categories || [];
+
+  const categoryOptions = useMemo(() => {
+    return [
+      { label: "All Categories", value: "all" },
+      ...rawCategories.map((c) => ({ label: c.name, value: c._id })),
+    ];
+  }, [rawCategories]);
 
   // Metrics
   const metrics = useMemo(() => {
@@ -85,7 +123,14 @@ export default function SubcategoriesPage() {
 
   // Filtered Subcategories
   const filteredSubcategories = useMemo(() => {
-    return rawSubcategories.filter((item) => {
+    let list = [...rawSubcategories];
+
+    // Enforce LIFO (Last In, First Out - Newest first)
+    list.sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+
+    return list.filter((item) => {
       // Search
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -157,290 +202,283 @@ export default function SubcategoriesPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* 1. Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link
-              href="/admin/categories"
-              className="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1 transition-colors"
-            >
-              <ArrowLeft size={13} />
-              <span>Back to Categories</span>
-            </Link>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Sub-Categories
-          </h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Manage child sub-categories linked to parent categories.
-          </p>
-        </div>
-
-        {/* Add Sub-Category Button */}
-        <Link
-          href="/admin/subcategories/add"
-          className="px-4 py-2.5 rounded-xl bg-[#5b52f9] hover:bg-[#4f44eb] text-white text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-xs transition-colors self-start sm:self-auto"
-        >
-          <Plus size={16} />
-          <span>Add Sub-Category</span>
-        </Link>
-      </div>
+      <PageHeader
+        title="Sub-Categories"
+        description="Manage child sub-categories linked to parent categories."
+        action={
+          <LinkButton
+            href="/admin/subcategories/add"
+            variant="brand"
+            size="default"
+            rounded="xl"
+            className="gap-1.5 shadow-xs self-start sm:self-auto"
+          >
+            <Plus size={16} />
+            <span>Add Sub-Category</span>
+          </LinkButton>
+        }
+      />
 
       {/* 2. Top 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Total Sub-categories */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">
             Total Sub-categories
           </span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.totalSubcategories}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               All sub-categories
             </span>
           </div>
         </Card>
 
         {/* Card 2: Active */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">Active</span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">Active</span>
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.activeSubcategories}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               Available to sellers
             </span>
           </div>
         </Card>
 
         {/* Card 3: Categories Linked */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">
             Parent Categories
           </span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.categoriesLinked}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               Categories with sub-items
             </span>
           </div>
         </Card>
 
         {/* Card 4: Inactive */}
-        <Card className="p-6 flex flex-col justify-between">
-          <span className="text-sm font-semibold text-gray-700">Inactive</span>
-          <div className="mt-5">
-            <span className="text-3xl font-bold text-[#5b52f9] tracking-tight block">
+        <Card className="p-4 sm:p-6 flex flex-col justify-between">
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">Inactive</span>
+          <div className="mt-3 sm:mt-5">
+            <span className="text-2xl sm:text-3xl font-bold text-[#5b52f9] tracking-tight block">
               {metrics.inactiveSubcategories}
             </span>
-            <span className="text-xs text-gray-400 mt-2 block">
+            <span className="text-[11px] sm:text-xs text-gray-400 mt-1 sm:mt-2 block">
               Disabled sub-categories
             </span>
           </div>
         </Card>
       </div>
 
-      {/* 3. Subcategories Directory Container */}
-      <Card className="p-6 space-y-6">
-        {/* Search Bar & Dropdown Filters */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search
-              size={17}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search sub-category name, parent, or slug..."
-              className="w-full h-11 pl-11 pr-4 rounded-xl bg-[#f0f2f5] border-0 text-xs sm:text-sm text-gray-900 placeholder:text-gray-500 font-normal focus:outline-none focus:ring-1 focus:ring-[#5b52f9]/30 transition-all"
-            />
-          </div>
+      {/* 3. Search Bar & Dropdown Filters (Outside Table Card) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search Input Component */}
+        <SearchInput
+          value={searchQuery}
+          onChange={handleSearchChange}
+          placeholder="Search sub-category name, parent, or slug..."
+          className="flex-1 min-w-0"
+        />
 
-          {/* Filters: Parent Category & Status */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            {/* Parent Category Filter Dropdown */}
-            <div className="relative">
-              <select
-                value={categoryFilter}
-                onChange={handleCategoryFilterChange}
-                className="h-11 pl-4 pr-8 rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-800 hover:bg-gray-50 focus:outline-none focus:border-[#5b52f9] appearance-none cursor-pointer transition-colors"
-              >
-                <option value="all">All Categories</option>
-                {rawCategories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={14}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-              />
-            </div>
+        {/* Filters: Parent Category & Status */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto flex-shrink-0">
+          {/* Parent Category Filter Dropdown */}
+          <SearchableSelect
+            value={categoryFilter}
+            onChange={handleCategoryFilterChange}
+            options={categoryOptions}
+            placeholder="All Categories"
+            size="md"
+            clearable={false}
+            className="w-full sm:w-48 flex-shrink-0"
+          />
 
-            {/* Status Dropdown */}
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={handleStatusFilterChange}
-                className="h-11 pl-4 pr-8 rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-800 hover:bg-gray-50 focus:outline-none focus:border-[#5b52f9] appearance-none cursor-pointer transition-colors"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <ChevronDown
-                size={14}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-              />
-            </div>
-          </div>
+          {/* Status Dropdown */}
+          <SearchableSelect
+            value={statusFilter}
+            onChange={handleStatusFilterChange}
+            options={STATUS_OPTIONS}
+            placeholder="All Status"
+            size="md"
+            clearable={false}
+            className="w-full sm:w-40 flex-shrink-0"
+          />
         </div>
+      </div>
 
-        {/* Section Title */}
-        <h3 className="text-sm font-bold text-gray-900 tracking-tight pt-1 flex items-center gap-2">
-          <FolderTree size={16} className="text-[#5b52f9]" />
-          <span>Sub-Categories Directory</span>
-        </h3>
-
-        {/* Table */}
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-gray-100 hover:bg-transparent">
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[35%]">
-                Sub-Category
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[25%]">
-                Parent Category
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[20%]">
-                Updated
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[10%]">
-                Status
-              </TableHead>
-              <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 text-right w-[10%]">
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoadingSubs ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
-                    <Loader2 size={24} className="animate-spin text-[#5b52f9]" />
-                    <span className="text-xs">Loading sub-categories...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : paginatedSubcategories.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-xs text-gray-400">
-                  No sub-categories found. Click &quot;Add Sub-Category&quot; to create one.
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedSubcategories.map((item) => (
-                <TableRow
-                  key={item._id}
-                  className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/40 transition-colors"
-                >
-                  {/* Sub-Category Name and Icon */}
-                  <TableCell className="py-4 px-4">
-                    <div className="flex items-center gap-3">
-                      {item.icon || item.image ? (
+      {/* 4. Subcategories Directory Table Card */}
+      <Card className="overflow-hidden border border-border bg-white">
+        {isLoadingSubs ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-2 text-gray-400">
+            <Loader2 size={24} className="animate-spin text-[#5b52f9]" />
+            <span className="text-xs">Loading sub-categories...</span>
+          </div>
+        ) : filteredSubcategories.length === 0 ? (
+          Boolean(searchQuery.trim() || categoryFilter !== "all" || statusFilter !== "all") ? (
+            <EmptyState
+              variant="search"
+              itemType="sub-categories"
+              title="No sub-categories found"
+              description="We couldn't find any sub-categories matching your search or filters."
+              onClear={() => {
+                setSearchQuery("");
+                setCategoryFilter("all");
+                setStatusFilter("all");
+                setCurrentPage(1);
+              }}
+            />
+          ) : (
+            <EmptyState
+              variant="empty"
+              itemType="sub-categories"
+              title="No sub-categories yet"
+              description="Start by creating your first child sub-category."
+              actionHref="/admin/subcategories/add"
+              actionLabel="Add Sub-Category"
+            />
+          )
+        ) : (
+          <>
+            <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                <FolderTree size={16} className="text-[#5b52f9]" />
+                <span>Sub-Categories Directory</span>
+              </h3>
+              <span className="text-xs text-gray-400">
+                {totalItems} total {totalItems === 1 ? "sub-category" : "sub-categories"}
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-gray-100 hover:bg-transparent">
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[30%]">
+                      Sub-Category
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[25%]">
+                      Parent Category
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[20%]">
+                      Updated
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 w-[15%]">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-gray-400 py-3 px-4 text-right w-[10%]">
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedSubcategories.map((item) => (
+                  <TableRow
+                    key={item._id}
+                    className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/40 transition-colors"
+                  >
+                    {/* Sub-Category Name and Icon */}
+                    <TableCell className="py-4 px-4">
+                      <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl overflow-hidden shadow-xs flex-shrink-0 bg-gray-50 border border-gray-100">
                           <img
-                            src={item.icon || item.image}
+                            src={item.image || "/review_avater.jpg"}
                             alt={item.name}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "/review_avater.jpg";
+                            }}
                           />
                         </div>
-                      ) : (
-                        <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#5b52f9] flex items-center justify-center font-bold text-xs flex-shrink-0">
-                          {item.name.slice(0, 2).toUpperCase()}
+
+                        <div>
+                          <span className="text-sm font-bold text-gray-900 block leading-snug">
+                            {item.name}
+                          </span>
+                          <span className="text-xs text-gray-400 block mt-0.5 font-normal">
+                            /{item.slug}
+                          </span>
                         </div>
-                      )}
-
-                      <div>
-                        <span className="text-sm font-bold text-gray-900 block leading-snug">
-                          {item.name}
-                        </span>
-                        <span className="text-xs text-gray-400 block mt-0.5 font-normal">
-                          /{item.slug}
-                        </span>
                       </div>
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
-                  {/* Parent Category Badge */}
-                  <TableCell className="py-4 px-4">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700">
-                      <Tag size={12} className="text-[#5b52f9]" />
-                      <span>{item.category?.name || "Root"}</span>
-                    </div>
-                  </TableCell>
+                    {/* Parent Category Badge */}
+                    <TableCell className="py-4 px-4">
+                      <Badge variant="neutral" size="sm" className="inline-flex items-center gap-1.5 font-semibold text-gray-700">
+                        <Tag size={12} className="text-[#5b52f9]" />
+                        <span>{item.category?.name || "Root"}</span>
+                      </Badge>
+                    </TableCell>
 
-                  {/* Updated Date */}
-                  <TableCell className="py-4 px-4">
-                    <span className="text-xs font-medium text-gray-800 block">
-                      {new Date(item.updatedAt || Date.now()).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <span className="text-[11px] text-gray-400 block font-normal mt-0.5">
-                      Recently updated
-                    </span>
-                  </TableCell>
+                    {/* Updated Date */}
+                    <TableCell className="py-4 px-4">
+                      <span className="text-xs font-medium text-gray-800 block">
+                        {new Date(item.updatedAt || Date.now()).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </TableCell>
 
-                  {/* Status Pill */}
-                  <TableCell className="py-4 px-4">
-                    <Badge variant={item.is_active !== false ? "active" : "inactive"}>
-                      {item.is_active !== false ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
+                    {/* Status Toggle Switch + Pill */}
+                    <TableCell className="py-4 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(item)}
+                          disabled={togglingId === item._id}
+                          title={item.is_active !== false ? "Click to deactivate" : "Click to activate"}
+                          className="cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                        >
+                          <Badge variant={item.is_active !== false ? "active" : "inactive"} size="sm">
+                            {item.is_active !== false ? "Active" : "Inactive"}
+                          </Badge>
+                        </button>
+                      </div>
+                    </TableCell>
 
-                  {/* Actions: Edit, Delete */}
-                  <TableCell className="py-4 px-4 text-right">
-                    <div className="inline-flex items-center justify-end gap-3 text-gray-400">
-                      {/* Edit */}
-                      <Link
-                        href={`/admin/subcategories/edit/${item._id}`}
-                        title="Edit Sub-Category"
-                        className="text-gray-500 hover:text-gray-900 transition-colors"
-                      >
-                        <Edit3 size={15} />
-                      </Link>
+                    {/* Actions: Edit, Delete */}
+                    <TableCell className="py-4 px-4 text-right">
+                      <div className="inline-flex items-center justify-end gap-3 text-gray-400">
+                        {/* Edit */}
+                        <Link
+                          href={`/admin/subcategories/edit/${item._id}`}
+                          title="Edit Sub-Category"
+                          className="text-gray-500 hover:text-gray-900 transition-colors"
+                        >
+                          <Edit3 size={15} />
+                        </Link>
 
-                      {/* Delete Icon */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenDeleteModal(item)}
-                        title="Delete Sub-Category"
-                        className="w-4.5 h-4.5 rounded-full bg-[#f87171] hover:bg-[#ef4444] text-white flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
-                      >
-                        <X size={10} strokeWidth={3} />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                        {/* Delete Icon */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDeleteModal(item)}
+                          title="Delete Sub-Category"
+                          className="w-4.5 h-4.5 rounded-full bg-[#f87171] hover:bg-[#ef4444] text-white flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
+                        >
+                          <X size={10} strokeWidth={3} />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
+    </Card>
 
-        {/* Dynamic Pagination Controls */}
+    {/* Pagination in its own Card */}
+    {totalItems > 0 && (
+      <Card className="bg-white p-4">
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -450,6 +488,7 @@ export default function SubcategoriesPage() {
           showAlways={totalItems > 0}
         />
       </Card>
+    )}
 
       {/* Centralized Reusable Delete Confirmation Modal */}
       <DeleteModal
